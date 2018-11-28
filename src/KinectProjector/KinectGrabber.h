@@ -24,6 +24,7 @@ General Public License for more details.
 #include "ofxOpenCv.h"
 #include "ofxCv.h"
 #include "ofxKinect.h"
+#include "ofxRealSense2.h"
 
 #include "Utils.h"
 
@@ -126,7 +127,8 @@ private:
     
     // Kinect parameters
 	bool kinectOpened;
-    ofxKinect               kinect;
+    //ofxKinect               kinect;
+	ofxRealSense2				kinect;
     unsigned int width, height; // Width and height of kinect frames
 	int minX, maxX; // , ROIwidth; // ROI definition
 	int minY, maxY; //, ROIheight;

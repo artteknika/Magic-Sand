@@ -29,6 +29,7 @@
 		7ADB04AF67C568EAFAEBA546 /* ofxKinectExtras.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01438542609FC64F1EC60EEB /* ofxKinectExtras.cpp */; };
 		7CDAD32BE4FA46701E3552C7 /* RunningBackground.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CBF6AED6A17AC0C17F63CC4 /* RunningBackground.cpp */; };
 		85EEBF281BD3B965FFF08547 /* ofxParagraph.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FFD9950F86D72C5A562DF545 /* ofxParagraph.cpp */; };
+		896256BC21394E2600EBDFEB /* ofxRealSense2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 896256BB21394E2600EBDFEB /* ofxRealSense2.cpp */; };
 		933A2227713C720CEFF80FD9 /* tinyxml.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2B40EDA85BEB63E46785BC29 /* tinyxml.cpp */; };
 		9CF4130A7E6DA19A3DC42B9A /* ofxSmartFont.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C954E0E8B7DB9D6983309883 /* ofxSmartFont.cpp */; };
 		9D44DC88EF9E7991B4A09951 /* tinyxmlerror.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 832BDC407620CDBA568B713D /* tinyxmlerror.cpp */; };
@@ -229,6 +230,8 @@
 		8738DE90218B1E9054A88B54 /* Helpers.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = Helpers.h; path = ../../../addons/ofxCv/libs/ofxCv/include/ofxCv/Helpers.h; sourceTree = SOURCE_ROOT; };
 		87DBF560FF25F1CD2E737825 /* openfabmap.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = openfabmap.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/contrib/openfabmap.hpp; sourceTree = SOURCE_ROOT; };
 		896211FFD7650884437CE42C /* ofxSmartFont.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = ofxSmartFont.h; path = ../../../addons/ofxDatGui/src/libs/ofxSmartFont/ofxSmartFont.h; sourceTree = SOURCE_ROOT; };
+		896256BA21394E2600EBDFEB /* ofxRealSense2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ofxRealSense2.h; path = ../../../addons/ofxRealSense2/src/ofxRealSense2.h; sourceTree = "<group>"; };
+		896256BB21394E2600EBDFEB /* ofxRealSense2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ofxRealSense2.cpp; path = ../../../addons/ofxRealSense2/src/ofxRealSense2.cpp; sourceTree = "<group>"; };
 		8A4DD23693DFAB8EC05FAA5D /* ofxCvShortImage.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 30; name = ofxCvShortImage.cpp; path = ../../../addons/ofxOpenCv/src/ofxCvShortImage.cpp; sourceTree = SOURCE_ROOT; };
 		8B25248CC7F2228B1CEF2EB1 /* libusb.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = libusb.h; path = "../../../addons/ofxKinect/libs/libusb-1.0/include/libusb-1.0/libusb.h"; sourceTree = SOURCE_ROOT; };
 		8DB45DE3BD6BB97E34BDB411 /* nn_index.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = nn_index.h; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/flann/nn_index.h; sourceTree = SOURCE_ROOT; };
@@ -836,6 +839,15 @@
 			name = core;
 			sourceTree = "<group>";
 		};
+		896256B921394DCC00EBDFEB /* ofxRealSense2 */ = {
+			isa = PBXGroup;
+			children = (
+				896256BB21394E2600EBDFEB /* ofxRealSense2.cpp */,
+				896256BA21394E2600EBDFEB /* ofxRealSense2.h */,
+			);
+			name = ofxRealSense2;
+			sourceTree = "<group>";
+		};
 		90D509C72729D1998E28A98F /* libs */ = {
 			isa = PBXGroup;
 			children = (
@@ -1003,6 +1015,7 @@
 		BB4B014C10F69532006C3DED /* addons */ = {
 			isa = PBXGroup;
 			children = (
+				896256B921394DCC00EBDFEB /* ofxRealSense2 */,
 				6025FAF6414C2CA589764D26 /* ofxCv */,
 				D8DD1043C333F6F63C8685E6 /* ofxDatGui */,
 				9683228C705CA3FF4F2EA945 /* ofxKinect */,
@@ -1377,6 +1390,7 @@
 				E4B69E200A3A1BDC003C02F2 /* main.cpp in Sources */,
 				E4B69E210A3A1BDC003C02F2 /* ofApp.cpp in Sources */,
 				F286B1EBA8ED3F2DAB7327A2 /* ColorMap.cpp in Sources */,
+				896256BC21394E2600EBDFEB /* ofxRealSense2.cpp in Sources */,
 				1F2C2F525E8E6E9AAA60A47F /* KinectGrabber.cpp in Sources */,
 				B7F4846E1F54633700C0812E /* ReferenceMapHandler.cpp in Sources */,
 				4CA87C3AAAB8074EC6CF6393 /* KinectProjector.cpp in Sources */,
@@ -1728,18 +1742,27 @@
 					../../../addons/ofxParagraph/src,
 					../../../addons/ofxXmlSettings/libs,
 					../../../addons/ofxXmlSettings/src,
+					../../../addons/ofxRealSense2/src,
+					/usr/local/include,
 				);
 				ICON = "$(ICON_NAME_DEBUG)";
 				ICON_FILE = "$(ICON_FILE_PATH)$(ICON)";
 				INFOPLIST_FILE = "openFrameworks-Info.plist";
 				INSTALL_PATH = /Applications;
-				LIBRARY_SEARCH_PATHS = "$(inherited)";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/usr/local/Cellar/libusb/1.0.22/lib,
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				OTHER_LDFLAGS = (
 					"$(OF_CORE_FRAMEWORKS)",
 					"$(OF_CORE_LIBS)",
 					"../../../addons/ofxKinect/libs/libusb-1.0/lib/osx/usb-1.0.a",
 					../../../addons/ofxOpenCv/libs/opencv/lib/osx/opencv.a,
+					"-Wl,-search_paths_first",
+					"-Wl,-headerpad_max_install_names",
+					/usr/local/lib/librealsense2.2.dylib,
+					"-lusb-1.0",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)Debug";
 				WRAPPER_EXTENSION = app;
@@ -1826,18 +1849,25 @@
 					../../../addons/ofxParagraph/src,
 					../../../addons/ofxXmlSettings/libs,
 					../../../addons/ofxXmlSettings/src,
+					../../../addons/ofxRealSense2/src,
+					/usr/local/include,
 				);
 				ICON = "$(ICON_NAME_RELEASE)";
 				ICON_FILE = "$(ICON_FILE_PATH)$(ICON)";
 				INFOPLIST_FILE = "openFrameworks-Info.plist";
 				INSTALL_PATH = /Applications;
-				LIBRARY_SEARCH_PATHS = "$(inherited)";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/usr/local/Cellar/libusb/1.0.22/lib,
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				OTHER_LDFLAGS = (
 					"$(OF_CORE_FRAMEWORKS)",
 					"$(OF_CORE_LIBS)",
 					"../../../addons/ofxKinect/libs/libusb-1.0/lib/osx/usb-1.0.a",
 					../../../addons/ofxOpenCv/libs/opencv/lib/osx/opencv.a,
+					/usr/local/lib/librealsense2.2.dylib,
+					"-lusb-1.0",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
