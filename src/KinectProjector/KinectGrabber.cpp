@@ -197,11 +197,26 @@ void KinectGrabber::performInThread(std::function<void(KinectGrabber&)> action) 
 
 void KinectGrabber::filter()
 {
-	if (bufferInitiated && numAveragingSlots < 2)
+    // OpenCVでデノイズを行う場所のデータを吐き出す
+    if(!filter_flag){
+        system("mkdir ../tmp");
+        std::cout << "ディレクトリ作成完了" << std::endl;
+        filter_flag = true;
+    }else{
+        std::cout << "ディレクトリ作成失敗" << std::endl;
+    }
+    /* 未実装
+    ofSaveImage(kinectDepthImage, "../tmp/image.png");
+    system("g++ `pkg-config --libs --cflags opencv` ~/OF/of_v0.9.8_osx_release/apps/magic-sand/bin/denoise.cpp");
+    system("./a.out");
+     */
+    // depth画像の取得
+    const RawDepth* inputFramePtr = static_cast<const RawDepth*>(kinectDepthImage.getData());
+    float* filteredFramePtr = filteredframe.getData();
+    
+	if (bufferInitiated && numAveragingSlots < 50)
 	{
 		// Just copy raw kinect data
-		const RawDepth* inputFramePtr = static_cast<const RawDepth*>(kinectDepthImage.getData());
-		float* filteredFramePtr = filteredframe.getData();
 		inputFramePtr += minY*width;  // We only scan kinect ROI
 		filteredFramePtr += minY*width;
 
@@ -231,12 +246,9 @@ void KinectGrabber::filter()
 	}
 	else if (bufferInitiated)
     {
-        const RawDepth* inputFramePtr = static_cast<const RawDepth*>(kinectDepthImage.getData());
         float* averagingBufferPtr = averagingBuffer+averagingSlotIndex*height*width;
         float* statBufferPtr = statBuffer;
         float* validBufferPtr = validBuffer;
-        float* filteredFramePtr = filteredframe.getData();
-        
         inputFramePtr += minY*width;  // We only scan kinect ROI
         averagingBufferPtr += minY*width;
         statBufferPtr += minY*width*3;
@@ -272,12 +284,12 @@ void KinectGrabber::filter()
                             statBufferPtr[2] = newVal*newVal*numAveragingSlots;
                         }
                     }
-                    /* Update the pixel's statistics: */
+                    // Update the pixel's statistics:
                     ++statBufferPtr[0]; // Number of valid samples
                     statBufferPtr[1] += newVal; // Sum of valid samples
                     statBufferPtr[2] += newVal*newVal; // Sum of squares of valid samples
                     
-                    /* Check if the previous value in the averaging buffer was not initiated */
+                    // Check if the previous value in the averaging buffer was not initiated
                     if(oldVal != initialValue)
                     {
                         --statBufferPtr[0]; // Number of valid samples
@@ -285,18 +297,18 @@ void KinectGrabber::filter()
                         statBufferPtr[2] -= oldVal * oldVal; // Sum of squares of valid samples
                     }
                 }
-                // Check if the pixel is "stable": */
+                // Check if the pixel is "stable":
                 if(statBufferPtr[0] >= minNumSamples &&
                    statBufferPtr[2]*statBufferPtr[0] <= maxVariance*statBufferPtr[0]*statBufferPtr[0] + statBufferPtr[1]*statBufferPtr[1])
                 {
-                    /* Check if the new running mean is outside the previous value's envelope: */
+                    // Check if the new running mean is outside the previous value's envelope:
                     float newFiltered = statBufferPtr[1]/statBufferPtr[0];
                     if(abs(newFiltered-*validBufferPtr) >= hysteresis)
                     {
-                        /* Set the output pixel value to the depth-corrected running mean: */
+                        // Set the output pixel value to the depth-corrected running mean:
                         *filteredFramePtr = *validBufferPtr = newFiltered;
                     } else {
-                        /* Leave the pixel at its previous value: */
+                        // Leave the pixel at its previous value:
                         *filteredFramePtr = *validBufferPtr;
                     }
                 }
@@ -308,8 +320,9 @@ void KinectGrabber::filter()
             validBufferPtr += width-maxX;
             filteredFramePtr += width-maxX;
         }
+        // system("g++ ../remove_noise.cpp");
 
-        /* Go to the next averaging slot: */
+        // Go to the next averaging slot:
         if(++averagingSlotIndex==numAveragingSlots)
             averagingSlotIndex=0;
         
@@ -324,7 +337,7 @@ void KinectGrabber::filter()
 			applySimpleOutlierInpainting();
 		}
 
-        /* Apply a spatial filter if requested: */
+        // Apply a spatial filter if requested:
         if(spatialFilter)
         {
             applySpaceFilter();

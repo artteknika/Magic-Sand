@@ -5,3 +5,4 @@ ofxModal
 ofxOpenCv
 ofxParagraph
 ofxXmlSettings
+ofxrealsense2

@@ -113,9 +113,9 @@ private:
 	float findInpaintValue(float *data, int x, int y);
 	double ROIAverageValue = 0;
 	int setToLocalAvg = 0;
-	int setToGlobalAvg = 0;
+    int setToGlobalAvg = 0;
 
-
+    bool filter_flag = false;
 	bool newFrame;
     bool bufferInitiated;
     bool firstImageReady;
