@@ -198,6 +198,7 @@ void KinectGrabber::performInThread(std::function<void(KinectGrabber&)> action) 
 void KinectGrabber::filter()
 {
     // OpenCVでデノイズを行う場所のデータを吐き出す
+    /* 処理が重いので環境依存 + Opencvの環境が必須
     if(!filter_flag){
         system("mkdir ../tmp");
         std::cout << "ディレクトリ作成完了" << std::endl;
@@ -205,10 +206,17 @@ void KinectGrabber::filter()
     }else{
         std::cout << "ディレクトリ作成失敗" << std::endl;
     }
-    /* 未実装
-    ofSaveImage(kinectDepthImage, "../tmp/image.png");
-    system("g++ `pkg-config --libs --cflags opencv` ~/OF/of_v0.9.8_osx_release/apps/magic-sand/bin/denoise.cpp");
+    ofSaveImage(kinectDepthImage, "../tmp/img.png");
+    system("g++  ~/OF/of_v0.9.8_osx_release/apps/magic-sand/src/denoise.cpp ${OpenCV}");
     system("./a.out");
+    
+    ofImage tmp_I;
+    
+    ofShortPixels tmp;
+    
+    tmp_I.load("../tmp/img.png");
+    tmp = tmp_I.getPixels();
+     
      */
     // depth画像の取得
     const RawDepth* inputFramePtr = static_cast<const RawDepth*>(kinectDepthImage.getData());
@@ -216,7 +224,6 @@ void KinectGrabber::filter()
     
 	if (bufferInitiated && numAveragingSlots < 50)
 	{
-		// Just copy raw kinect data
 		inputFramePtr += minY*width;  // We only scan kinect ROI
 		filteredFramePtr += minY*width;
 
@@ -375,7 +382,7 @@ void KinectGrabber::setFullFrameFiltering(bool ff, ofRectangle ROI)
 
 void KinectGrabber::applySpaceFilter()
 {
-    for(int filterPass=0;filterPass<2;++filterPass)
+    for(int filterPass=0;filterPass< 20;++filterPass)
     {
 		// Pointer to first pixel of ROI
 		float *ptrOffset = filteredframe.getData() + minY * width + minX;

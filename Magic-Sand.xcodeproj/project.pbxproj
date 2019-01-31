@@ -2068,8 +2068,8 @@
 					"$(OF_CORE_FRAMEWORKS)",
 					"$(OF_CORE_LIBS)",
 					"../../addons/ofxKinect/libs/libusb-1.0/lib/osx/usb-1.0.a",
-					/usr/local/lib/librealsense2.2.dylib,
 					../../addons/ofxOpenCv/libs/opencv/lib/osx/opencv.a,
+					/usr/local/lib/librealsense2.2.dylib,
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)Debug";
 				WRAPPER_EXTENSION = app;
@@ -2174,8 +2174,8 @@
 					"$(OF_CORE_FRAMEWORKS)",
 					"$(OF_CORE_LIBS)",
 					"../../addons/ofxKinect/libs/libusb-1.0/lib/osx/usb-1.0.a",
-					/usr/local/lib/librealsense2.2.dylib,
 					../../addons/ofxOpenCv/libs/opencv/lib/osx/opencv.a,
+					/usr/local/lib/librealsense2.2.dylib,
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
