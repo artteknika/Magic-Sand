@@ -217,7 +217,8 @@ private:
     void exit(ofEventArgs& e);
     void setupGradientField();
     
-
+    
+    void init_FBOprojector();
     void updateCalibration();
     void updateFullAutoCalibration();
     void updateROIAutoCalibration();
@@ -256,6 +257,7 @@ private:
     bool secondScreenFound;
 	bool kinectOpened;
 	float lastKinectOpenTry;
+    double errorcounts;
 	bool ROIcalibrated;
     bool projKinectCalibrated;
 //    bool ROIUpdated;

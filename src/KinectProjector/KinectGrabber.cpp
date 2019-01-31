@@ -195,64 +195,32 @@ void KinectGrabber::performInThread(std::function<void(KinectGrabber&)> action) 
     this->actionsLock.unlock();
 }
 
-void KinectGrabber::filter()
-{
-    // OpenCVでデノイズを行う場所のデータを吐き出す
-    /* 処理が重いので環境依存 + Opencvの環境が必須
-    if(!filter_flag){
-        system("mkdir ../tmp");
-        std::cout << "ディレクトリ作成完了" << std::endl;
-        filter_flag = true;
-    }else{
-        std::cout << "ディレクトリ作成失敗" << std::endl;
-    }
-    ofSaveImage(kinectDepthImage, "../tmp/img.png");
-    system("g++  ~/OF/of_v0.9.8_osx_release/apps/magic-sand/src/denoise.cpp ${OpenCV}");
-    system("./a.out");
-    
-    ofImage tmp_I;
-    
-    ofShortPixels tmp;
-    
-    tmp_I.load("../tmp/img.png");
-    tmp = tmp_I.getPixels();
-     
-     */
-    // depth画像の取得
+void KinectGrabber::depth_filtering(){
     const RawDepth* inputFramePtr = static_cast<const RawDepth*>(kinectDepthImage.getData());
     float* filteredFramePtr = filteredframe.getData();
+    inputFramePtr += minY*width;  // We only scan kinect ROI
+    filteredFramePtr += minY*width;
     
-	if (bufferInitiated && numAveragingSlots < 50)
-	{
-		inputFramePtr += minY*width;  // We only scan kinect ROI
-		filteredFramePtr += minY*width;
-
-		for (unsigned int y = minY; y < maxY; ++y)
-		{
-			inputFramePtr += minX;
-			filteredFramePtr += minX;
-
-			for (unsigned int x = minX; x < maxX; ++x, ++inputFramePtr, ++filteredFramePtr)
-			{
-				float newVal = static_cast<float>(*inputFramePtr);
-				*filteredFramePtr = newVal;
-			}
-			inputFramePtr += width - maxX;
-			filteredFramePtr += width - maxX;
-		}
-
-		if (doInPaint)
-		{
-			applySimpleOutlierInpainting();
-		}
-
-		if (spatialFilter)
-		{
-			applySpaceFilter();
-		}
-	}
-	else if (bufferInitiated)
+    for (unsigned int y = minY; y < maxY; ++y)
     {
+        inputFramePtr += minX;
+        filteredFramePtr += minX;
+        
+        for (unsigned int x = minX; x < maxX; ++x, ++inputFramePtr, ++filteredFramePtr)
+        {
+            float newVal = static_cast<float>(*inputFramePtr);
+            *filteredFramePtr = newVal;
+        }
+        inputFramePtr += width - maxX;
+        filteredFramePtr += width - maxX;
+    }
+}
+
+void KinectGrabber::filter(){
+	if (bufferInitiated)
+    {
+        const RawDepth* inputFramePtr = static_cast<const RawDepth*>(kinectDepthImage.getData());
+        float* filteredFramePtr = filteredframe.getData();
         float* averagingBufferPtr = averagingBuffer+averagingSlotIndex*height*width;
         float* statBufferPtr = statBuffer;
         float* validBufferPtr = validBuffer;
@@ -327,18 +295,18 @@ void KinectGrabber::filter()
             validBufferPtr += width-maxX;
             filteredFramePtr += width-maxX;
         }
-        // system("g++ ../remove_noise.cpp");
-
         // Go to the next averaging slot:
         if(++averagingSlotIndex==numAveragingSlots)
             averagingSlotIndex=0;
         
         if (!firstImageReady){
             currentInitFrame++;
-            if(currentInitFrame > minInitFrame)
+            if(currentInitFrame > minInitFrame){
                 firstImageReady = true;
+                std::cout << "Ready Calibration" << std::endl;
+            }
         }
-        
+        depth_filtering();
 		if (doInPaint)
 		{
 			applySimpleOutlierInpainting();

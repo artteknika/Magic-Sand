@@ -123,11 +123,8 @@ void KinectProjector::setup(bool sdisplayGui)
     // Setup gradient field
     setupGradientField();
     
-    fboProjWindow.allocate(projRes.x, projRes.y, GL_RGBA);
-    fboProjWindow.begin();
-    ofClear(255, 255, 255, 0);
-	ofBackground(255); // Set to white in setup mode
-    fboProjWindow.end();
+    //init FBOprojector
+    init_FBOprojector();
     
     fboMainWindow.allocate(kinectRes.x, kinectRes.y, GL_RGBA);
     fboMainWindow.begin();
@@ -140,6 +137,9 @@ void KinectProjector::setup(bool sdisplayGui)
     kinectgrabber.start(); // Start the acquisition
 
 	updateStatusGUI();
+    
+    // Calibration Error count
+    errorcounts = 0.0;
 }
 
 void KinectProjector::exit(ofEventArgs& e)
@@ -189,7 +189,13 @@ void KinectProjector::updateStatusGUI()
 		StatusGUI->getLabel("Kinect Status")->setLabel("Kinect not found");
 		StatusGUI->getLabel("Kinect Status")->setLabelColor(ofColor(255, 0, 0));
 	}
-
+    if(imageStabilized){
+        StatusGUI->getLabel("Ready Calibration")->setLabel("ready calibration");
+        StatusGUI->getLabel("Ready Calibration")->setLabelColor(ofColor(0, 255, 0));
+    }else{
+        StatusGUI->getLabel("Ready Calibration")->setLabel("not ready calibration");
+        StatusGUI->getLabel("Ready Calibration")->setLabelColor(ofColor(255, 0, 0));
+    }
 	if (ROIcalibrated)
 	{
 		StatusGUI->getLabel("ROI Status")->setLabel("ROI defined");
@@ -222,7 +228,8 @@ void KinectProjector::updateStatusGUI()
 		StatusGUI->getLabel("Calibration Status")->setLabel("Projector/Kinect not calibrated");
 		StatusGUI->getLabel("Calibration Status")->setLabelColor(ofColor(255, 0, 0));
 	}
-
+    
+    StatusGUI->getLabel("Calibration Error Count")->setLabel("Calibration Error count : " + std::to_string((int)errorcounts));
 	StatusGUI->getLabel("Projector Status")->setLabel("Projector " + ofToString(projRes.x) + " x " + ofToString(projRes.y));
 
 	std::string AppStatus = "Setup";
@@ -245,6 +252,7 @@ void KinectProjector::updateStatusGUI()
 
 void KinectProjector::update()
 {
+    updateStatusGUI();
     // Clear updated state variables
     basePlaneUpdated = false;
 //    ROIUpdated = false;
@@ -267,8 +275,9 @@ void KinectProjector::update()
 			kinectgrabber.setupFramefilter(gradFieldResolution, maxOffset, kinectROI, spatialFiltering, followBigChanges, numAveragingSlots);
 			kinectWorldMatrix = kinectgrabber.getWorldMatrix();
 			ofLogVerbose("KinectProjector") << "KinectProjector.update(): kinectWorldMatrix: " << kinectWorldMatrix;
-
-			updateStatusGUI();
+            
+            
+			
 		}
 	}
 
@@ -841,6 +850,7 @@ void KinectProjector::updateProjKinectAutoCalibration()
             kinectProjMatrix = kpt->getProjectionMatrix();
 
 			double ReprojectionError = ComputeReprojectionError(DumpDebugFiles);
+            errorcounts = ReprojectionError;
 			ofLogVerbose("KinectProjector") << "autoCalib(): ReprojectionError " + ofToString(ReprojectionError);
 
 			if (ReprojectionError > 50)
@@ -989,7 +999,6 @@ void KinectProjector::CalibrateNextPoint()
 
 			cornerSubPix(cvGrayImage, cvPoints, cv::Size(2, 2), cv::Size(-1, -1),   // Rasmus: changed search size to 2 from 11 - since this caused false findings
 				cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 0.1));
-
 			drawChessboardCorners(cvRgbImage, patternSize, cv::Mat(cvPoints), foundChessboard);
 
 			if (DumpDebugFiles)
@@ -1022,7 +1031,7 @@ void KinectProjector::CalibrateNextPoint()
 				{
 					// Move the chessboard closer to the center of the screen
 					ofLogVerbose("KinectProjector") << "autoCalib(): Chessboard could not be found moving chessboard closer to center ";
-					autoCalibPts[currentCalibPts] = 4 * autoCalibPts[currentCalibPts] / 5;
+					autoCalibPts[currentCalibPts] = 3 * autoCalibPts[currentCalibPts] / 4;
 					ofPoint dispPt = ofPoint(projRes.x / 2, projRes.y / 2) + autoCalibPts[currentCalibPts]; // Compute next chessboard position
 					drawChessboard(dispPt.x, dispPt.y, chessboardSize); // We can now draw the next chess board
 					trials = 0;
@@ -1218,7 +1227,16 @@ void KinectProjector::drawMainWindow(float x, float y, float width, float height
 	}
 }
 
+void KinectProjector::init_FBOprojector(){
+    fboProjWindow.allocate(projRes.x, projRes.y, GL_RGBA);
+    fboProjWindow.begin();
+    ofClear(255, 255, 255, 0);
+    ofBackground(255); // Set to white in setup mode
+    fboProjWindow.end();
+}
+
 void KinectProjector::drawChessboard(int x, int y, int chessboardSize) {
+    init_FBOprojector();
     fboProjWindow.begin();
     ofFill();
     // Draw the calibration chess board on the projector window
@@ -1447,10 +1465,12 @@ void KinectProjector::setupGui(){
 	StatusGUI = new ofxDatGui(ofxDatGuiAnchor::BOTTOM_LEFT);
 	StatusGUI->addLabel("Application Status");
 	StatusGUI->addLabel("Kinect Status");
+    StatusGUI->addLabel("Ready Calibration");
 	StatusGUI->addLabel("ROI Status");
 	StatusGUI->addLabel("Baseplane Status");
 	StatusGUI->addLabel("Calibration Status");
 	StatusGUI->addLabel("Calibration Step");
+    StatusGUI->addLabel("Calibration Error Count");
 	StatusGUI->addLabel("Projector Status");
 	StatusGUI->addHeader(":: Status ::", false);
 	StatusGUI->setAutoDraw(false);

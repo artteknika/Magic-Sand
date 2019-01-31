@@ -102,6 +102,7 @@ public:
 private:
 	void threadedFunction() override;
     void filter();
+    void depth_filtering();
     bool isInsideROI(int x, int y); // test is x, y is inside ROI
     void applySpaceFilter();
     void updateGradientField();
