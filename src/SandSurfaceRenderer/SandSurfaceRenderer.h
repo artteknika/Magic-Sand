@@ -28,7 +28,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 #include <iostream>
 #include "ofMain.h"
-#include "../KinectProjector/KinectProjector.h"
+#include "../Rs2Projector/Rs2Projector.h"
 #include "ColorMap.h"
 
 
@@ -64,7 +64,7 @@ private:
 
 class SandSurfaceRenderer {
 public:
-    SandSurfaceRenderer(std::shared_ptr<KinectProjector> const& k, std::shared_ptr<ofAppBaseWindow> const& p);
+    SandSurfaceRenderer(std::shared_ptr<Rs2Projector> const& k, std::shared_ptr<ofAppBaseWindow> const& p);
     
     // Main loop function
     void setup(bool sdisplayGui);
@@ -96,17 +96,17 @@ private:
     bool saveSettings();
     
     // shared pointers
-    std::shared_ptr<KinectProjector> kinectProjector;
+    std::shared_ptr<Rs2Projector> rs2Projector;
     std::shared_ptr<ofAppBaseWindow> projWindow;
     bool settingsLoaded;
     
     // Projector Resolution
     int projResX, projResY;
-	ofRectangle kinectROI;
+	ofRectangle rs2ROI;
 
     // Conversion matrices
-    ofMatrix4x4                 transposedKinectProjMatrix;
-    ofMatrix4x4                 transposedKinectWorldMatrix;
+    ofMatrix4x4                 transposedRs2ProjMatrix;
+    ofMatrix4x4                 transposedRs2WorldMatrix;
 
     // Mesh
     ofMesh mesh;

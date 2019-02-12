@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 #include "ofMain.h"
 #include "ofxDatGui.h"
-#include "KinectProjector/KinectProjector.h"
+#include "Rs2Projector/Rs2Projector.h"
 #include "SandSurfaceRenderer/SandSurfaceRenderer.h"
 #include "Games/MapGameController.h"
 #include "Games/BoidGameController.h"
@@ -53,7 +53,7 @@ public:
 	std::shared_ptr<ofAppBaseWindow> projWindow;
 
 private:
-	std::shared_ptr<KinectProjector> kinectProjector;
+	std::shared_ptr<Rs2Projector> rs2Projector;
 	SandSurfaceRenderer* sandSurfaceRenderer;
 	CMapGameController mapGameController;
 	CBoidGameController boidGameController;

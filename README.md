@@ -27,14 +27,14 @@ Connect and turn on the projector and the kinect and start the software.
 
 By default the software starts in a **setup** mode where the depth or color image from the Kinect can be seen in the user interface and the projector projects a completely white image. This way it is easy to check if the Kinect is running (on Windows 10 machines it can be necessary to plug and unplug the Kinect several times before it starts) and if the projector is working. The status of the kinect and the projector can be seen in the status window to the lower left in the user interface.
 
-In **setup** mode the physical positions of the Kinect and projector can be optimised. 
+In **setup** mode the physical positions of the Kinect and projector can be optimised.
 
 ### Calibration
 
 To calibrate the system so the kinect and the projector is in correspondence a few steps are needed:
 - Flatten the sand in the sand box.
 - Make sure that you see either the depth image or the color image from the Kinect (click **advanced|Display Kinect Depth View**)
-- Press **Calibration|Manually Draw Sand Region** 
+- Press **Calibration|Manually Draw Sand Region**
 - Define the sand region by drawing a rectangle with the mouse on the Kinect Depth or Color view
 - Press **Automatically Calibrate Kinect & Projector** - a series of Chessboard patterns are now projected  on the sand.
 - When a prompt appears cover the sand box with a light piece of cardboard or similar
@@ -54,7 +54,7 @@ Now a colored map with iso-lines should appear on the sand. The framerate should
 
 There are a few games included in Magic-Sand
 
-### Shape an Island 
+### Shape an Island
 The background for the game is that Denmark have more than [400 Islands](https://en.wikipedia.org/wiki/List_of_islands_of_Denmark) and we wanted to create a game that could teach people about islands. We added a few non-Danish Islands as well.
 The aim of the game is to shape an Island that matches a given Island. Only the outer contour of the Island is compared (not the height). The game is played like this:
 
@@ -72,7 +72,7 @@ It is possible to add more Islands.  Instructions will be added later.
 
 This game was used in an educational event at the Danish Island Bornholm as seen in this [video](https://www.youtube.com/watch?v=dDMrxtH1hyU).
 
-This game was mainly developed by Rasmus R. Paulsen. 
+This game was mainly developed by Rasmus R. Paulsen.
 
 ### The Sandimals 2-player game
 In this game the box is divided into two halfes where each player is only allowed to move the sand in his half. The goal is collect as much **food** and as many **skins** as possible in **5 minutes**. You get **skins** by having rabbits on your half and you get **food** by having fish on your half. The more rabbit the more skins per second. The more and bigger fish the more food per second.
@@ -90,32 +90,32 @@ The behaviour of **fish**:
 - they move in flocks
 - they flee from sharks (they will get a **red** center)
 - they have a limited life-span (they have a **grey** center when they are soon dying)
-- they respawn at the current mother fish 
+- they respawn at the current mother fish
 - if a fish is eaten by a shark it respawns as a baby fish by the current mother fish
 - the mother fish has a **pink** center
 - the current mother fish is the oldest fish in the box
-- if a fish ends on land it will seek downwards to find water 
+- if a fish ends on land it will seek downwards to find water
 
 The behaviour of **sharks**:
 - the shark is white
 - there is always 2 sharks in the box
-- they move slow and have a **white** stomach when they are well fed 
+- they move slow and have a **white** stomach when they are well fed
 - they get a **black** stomach when they are hungry but not hunting
 - they get a **red** stomach when they are hunting and will move fast
 - there is a chance they will start hunting when they are hungry
 - they will hunt the biggest fish that are close to them
-- if they catch the fish they eat it and their hunger decrease. 
+- if they catch the fish they eat it and their hunger decrease.
 - if the hunger get too much (if they are trapped) they will die
 - if a shark die a new shark respawns
 - a shark respawns where there is the highest density of fish
-- if they end on land they will seek downwards to find water 
+- if they end on land they will seek downwards to find water
 
 The behaviour of **rabbits**:
 - there is always a fixed number (4, 6 or 10 depending on level) of rabbits in the box
 - they move and stop
 - they live on land
 
-Fish and sharks can be taken and moved using your hands if you shape them like a bowl. 
+Fish and sharks can be taken and moved using your hands if you shape them like a bowl.
 
 This game was mainly developed by Rasmus R. Paulsen.
 
@@ -130,7 +130,7 @@ This game was mainly developed by Thomas Wolfe.
 ## Coding and Extending Magic Sand
 
 ### Source Code
-The full source code for Magic Sand is available on [github.com/thomwolf/Magic-Sand](https://github.com/thomwolf/Magic-Sand). 
+The full source code for Magic Sand is available on [github.com/thomwolf/Magic-Sand](https://github.com/thomwolf/Magic-Sand).
 
 
 ### Dependencies
@@ -196,7 +196,7 @@ void ofApp::update(){
 }
 void ofApp::drawProjWindow(ofEventArgs &args){
   kinectProjector->drawProjectorWindow();
-    
+
   if (!kinectProjector->isCalibrating()){
       sandSurfaceRenderer->drawProjectorWindow();
       fboVehicles.draw(0,0);
@@ -273,17 +273,17 @@ The following functions can be called to change some internal values of `kinectP
 #### Kinect projector state functions
 
 The following functions give information of the state of the kinectprojector object:
-- `isCalibrating()`: is the `kinectProjector` currently performing a calibration 
+- `isCalibrating()`: is the `kinectProjector` currently performing a calibration
 - `isCalibrated()`: is the `kinectProjector` calibrated (calibration file found or calibration performed)
 - `isImageStabilized()`: is the depth frame stabilized (arbitrary time frame after initialisation)
 - `isBasePlaneUpdated()`: was the base plane updated in the previous call to `update()'
-- `isROIUpdated()`: was the sand region location/extension updated in the previous call to `update()' 
+- `isROIUpdated()`: was the sand region location/extension updated in the previous call to `update()'
 - `isCalibrationUpdated()`: was the calibration updated in the previous call to `update()'
 
 #### Kinect projector other getters
 The following functions give additional information :
-- `getKinectROI()`: get the sand region location/extension 
-- `getKinectRes()`: get the kinect resolution 
+- `getKinectROI()`: get the sand region location/extension
+- `getKinectRes()`: get the kinect resolution
 - `getBasePlaneNormal()` : see above
 - `getBasePlaneOffset()` : see above
 - `getBasePlaneEq()` : see above
@@ -315,7 +315,7 @@ Minor release of Magic-Sand-with-Games
 ### Added
 - Kinect FPS counter for received frames
 - XCode build files
-- Full frame filter option 
+- Full frame filter option
 - Simple InPainting option for removing outliers in the depth map
 - Better scaling of GUI
 - Debug feature: Kinect ROI can be seen on projector
@@ -325,7 +325,7 @@ Minor release of Magic-Sand-with-Games
 ### Changed
 - Animals in animal game is now flipped depending on Kinect-projector matrix - so hopefully no more backwards swimming
 - GUI update for animal game. Now updates animal numbers
-- Adjusted game constants for animal game. 
+- Adjusted game constants for animal game.
 - Added beginner/novice/normal/expert game mode. Press 1, 2, 3 or 4 to start the different modes.
 
 ### Bug fixes

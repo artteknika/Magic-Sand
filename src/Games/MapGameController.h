@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include "ofxOpenCv.h"
 #include "ofxCv.h"
 #include "ReferenceMapHandler.h"
-#include "../KinectProjector/KinectProjector.h"
+#include "../Rs2Projector/Rs2Projector.h"
 #include "SandboxScoreTracker.h"
 
 //! Controller for the mapper game
@@ -40,7 +40,7 @@ class CMapGameController
 		//! Destructor
 		virtual ~CMapGameController();
 
-		void setup(std::shared_ptr<KinectProjector> const& k);
+		void setup(std::shared_ptr<Rs2Projector> const& k);
 		void update();
 
 		void PlayAndShowCountDown(int resultTime);
@@ -64,18 +64,18 @@ class CMapGameController
 		
 		void setProjectorRes(ofVec2f& PR);
 
-		void setKinectRes(ofVec2f& KR);
+		void setRs2Res(ofVec2f& KR);
 
-		void setKinectROI(ofRectangle &KROI);
+		void setRs2ROI(ofRectangle &KROI);
 
-		ofRectangle getKinectROI();
+		ofRectangle getRs2ROI();
 
 		// Should debug files be dumped
 		void setDebug(bool flag);
 
 	private:
 		
-		std::shared_ptr<KinectProjector> kinectProjector;
+		std::shared_ptr<Rs2Projector> rs2Projector;
 
 		// Get the actual depth image
 		bool GetActualBinaryLandImage();
@@ -142,10 +142,10 @@ class CMapGameController
 
 		bool doShowMatchResultContourLines;
 
-		// Projector and kinect variables
+		// Projector and rs2 variables
 		ofVec2f projRes;
-		ofVec2f kinectRes;
-		ofRectangle kinectROI;
+		ofVec2f rs2Res;
+		ofRectangle rs2ROI;
 
 		// Binary version of land image
 		ofxCvGrayscaleImage BinaryLandImage;

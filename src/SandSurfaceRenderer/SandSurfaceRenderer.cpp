@@ -27,10 +27,10 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 using namespace ofxCSG;
 
-SandSurfaceRenderer::SandSurfaceRenderer(std::shared_ptr<KinectProjector> const& k, std::shared_ptr<ofAppBaseWindow> const& p)
+SandSurfaceRenderer::SandSurfaceRenderer(std::shared_ptr<Rs2Projector> const& k, std::shared_ptr<ofAppBaseWindow> const& p)
 :settingsLoaded(false),
 editColorMap(false){
-    kinectProjector = k;
+    rs2Projector = k;
     projWindow = p;
 }
 
@@ -101,7 +101,7 @@ void SandSurfaceRenderer::setup(bool sdisplayGui){
 	contourLineFboOffset = elevationMax;
     contourLineFactor = contourLineFboScale/contourLineDistance;
     
-	kinectROI = kinectProjector->getKinectROI();
+	rs2ROI = rs2Projector->getRs2ROI();
 
     //setup the mesh
     setupMesh();
@@ -156,17 +156,17 @@ void SandSurfaceRenderer::exit(ofEventArgs& e){
 
 void SandSurfaceRenderer::updateConversionMatrices(){
     // Get conversion matrices
-    transposedKinectProjMatrix = kinectProjector->getTransposedKinectProjMatrix();
-    transposedKinectWorldMatrix = kinectProjector->getTransposedKinectWorldMatrix();
+    transposedRs2ProjMatrix = rs2Projector->getTransposedRs2ProjMatrix();
+    transposedRs2WorldMatrix = rs2Projector->getTransposedRs2WorldMatrix();
 }
 
 void SandSurfaceRenderer::updateRangesAndBasePlane(){
-    basePlaneEq = kinectProjector->getBasePlaneEq();
-    basePlaneNormal = kinectProjector->getBasePlaneNormal();
-    basePlaneOffset = kinectProjector->getBasePlaneOffset();
+    basePlaneEq = rs2Projector->getBasePlaneEq();
+    basePlaneNormal = rs2Projector->getBasePlaneNormal();
+    basePlaneOffset = rs2Projector->getBasePlaneOffset();
 
     // Set the FilteredDepthImage native scale - converted to 0..1 when send to the shader
-    kinectProjector->updateNativeScale(basePlaneOffset.z+elevationMax, basePlaneOffset.z+elevationMin);
+    rs2Projector->updateNativeScale(basePlaneOffset.z+elevationMax, basePlaneOffset.z+elevationMin);
     
     // Calculate the  FilteredDepthImage scaling and offset coefficients
 	FilteredDepthScale = elevationMin-elevationMax;
@@ -178,18 +178,18 @@ void SandSurfaceRenderer::updateRangesAndBasePlane(){
 
 void SandSurfaceRenderer::setupMesh(){
     // Initialise mesh
-    kinectROI = kinectProjector->getKinectROI();
-  //  ofVec2f kinectRes = kinectProjector->getKinectRes();
-	ofLogVerbose("SandSurfaceRenderer") << "setupMesh. KinectROI: " << kinectROI;
+    rs2ROI = rs2Projector->getRs2ROI();
+  //  ofVec2f rs2Res = rs2Projector->getRs2Res();
+	ofLogVerbose("SandSurfaceRenderer") << "setupMesh. Rs2ROI: " << rs2ROI;
 
-    meshwidth = kinectROI.width;
-    meshheight = kinectROI.height;
+    meshwidth = rs2ROI.width;
+    meshheight = rs2ROI.height;
     mesh.clear();
 
 	for (unsigned int y = 0; y < meshheight; y++)
         for(unsigned int x=0;x<meshwidth;x++)
         {
-            ofPoint pt = ofPoint(x+kinectROI.x,y+kinectROI.y,0.0f)-ofPoint(0.5,0.5,0); // We move of a half pixel to center the color pixel (more beautiful)
+            ofPoint pt = ofPoint(x+rs2ROI.x,y+rs2ROI.y,0.0f)-ofPoint(0.125,0.125,0); // We move of a half pixel to center the color pixel (more beautiful)
             mesh.addVertex(pt); // make a new vertex
             mesh.addTexCoord(pt);
         }
@@ -208,12 +208,12 @@ void SandSurfaceRenderer::setupMesh(){
 
 void SandSurfaceRenderer::update(){
     // Update Renderer state if needed
-    //if (kinectProjector->isROIUpdated() || kinectProjector->getKinectROI() != kinectROI)
-	if (kinectProjector->getKinectROI() != kinectROI)
+    //if (rs2Projector->isROIUpdated() || rs2Projector->getRs2ROI() != rs2ROI)
+	if (rs2Projector->getRs2ROI() != rs2ROI)
 		setupMesh();
-    if (kinectProjector->isBasePlaneUpdated())
+    if (rs2Projector->isBasePlaneUpdated())
         updateRangesAndBasePlane();
-    if (kinectProjector->isCalibrationUpdated())
+    if (rs2Projector->isCalibrationUpdated())
         updateConversionMatrices();
     
     // Draw sandbox
@@ -253,10 +253,10 @@ void SandSurfaceRenderer::drawProjectorWindow(){
 void SandSurfaceRenderer::drawSandbox() {
     fboProjWindow.begin();
     ofBackground(0);
-    kinectProjector->bind();
+    rs2Projector->bind();
     heightMapShader.begin();
-    heightMapShader.setUniformMatrix4f("kinectProjMatrix",transposedKinectProjMatrix);
-    heightMapShader.setUniformMatrix4f("kinectWorldMatrix",transposedKinectWorldMatrix);
+    heightMapShader.setUniformMatrix4f("rs2ProjMatrix",transposedRs2ProjMatrix);
+    heightMapShader.setUniformMatrix4f("rs2WorldMatrix",transposedRs2WorldMatrix);
     heightMapShader.setUniform2f("heightColorMapTransformation",ofVec2f(heightMapScale,heightMapOffset));
     heightMapShader.setUniform2f("depthTransformation",ofVec2f(FilteredDepthScale,FilteredDepthOffset));
     heightMapShader.setUniform4f("basePlaneEq", basePlaneEq);
@@ -265,8 +265,9 @@ void SandSurfaceRenderer::drawSandbox() {
     heightMapShader.setUniform1f("contourLineFactor", contourLineFactor);
     heightMapShader.setUniform1i("drawContourLines", drawContourLines);
     mesh.draw();
+    // mesh.save("/Users/kexgaku/OF/of_v0.9.8_osx_release/apps/magic-sand/bin/test_image/sandbox.png");
     heightMapShader.end();
-    kinectProjector->unbind();
+    rs2Projector->unbind();
     fboProjWindow.end();
 }
 
@@ -274,22 +275,23 @@ void SandSurfaceRenderer::prepareContourLinesFbo()
 {
     contourLineFramebufferObject.begin();
     ofClear(255,255,255, 0);
-    kinectProjector->bind();
+    rs2Projector->bind();
 	elevationShader.begin();
-    elevationShader.setUniformMatrix4f("kinectProjMatrix",transposedKinectProjMatrix);
-    elevationShader.setUniformMatrix4f("kinectWorldMatrix",transposedKinectWorldMatrix);
+    elevationShader.setUniformMatrix4f("rs2ProjMatrix",transposedRs2ProjMatrix);
+    elevationShader.setUniformMatrix4f("rs2WorldMatrix",transposedRs2WorldMatrix);
     elevationShader.setUniform2f("contourLineFboTransformation",ofVec2f(contourLineFboScale,contourLineFboOffset));
     elevationShader.setUniform2f("depthTransformation",ofVec2f(FilteredDepthScale,FilteredDepthOffset));
     elevationShader.setUniform4f("basePlaneEq", basePlaneEq);
     mesh.draw();
+    // mesh.save("/Users/kexgaku/OF/of_v0.9.8_osx_release/apps/magic-sand/bin/test_image/preparemesh.png");
     elevationShader.end();
-    kinectProjector->unbind();
+    rs2Projector->unbind();
     contourLineFramebufferObject.end();
 }
 
 void SandSurfaceRenderer::setupGui(){
     // instantiate the modal windows //
-    auto theme = make_shared<ofxModalThemeProjKinect>();
+    auto theme = make_shared<ofxModalThemeProjRs2>();
     saveModal = make_shared<SaveModal>(theme);
     saveModal->addListener(this, &SandSurfaceRenderer::onSaveModalEvent);
     
