@@ -104,7 +104,7 @@ bool ofxRs2ProjectorToolkit::loadCalibration(string path){
         return false;
 	xml.setTo("RESOLUTIONS");
 	ofVec2f sprojRes = xml.getValue<ofVec2f>("PROJECTOR");
-	ofVec2f srs2Res = xml.getValue<ofVec2f>("KINECT");
+	ofVec2f srs2Res = xml.getValue<ofVec2f>("RS2");
 	if (sprojRes!=projRes || srs2Res!=rs2Res)
 		return false;
     xml.setTo("//CALIBRATION/COEFFICIENTS");
@@ -126,7 +126,7 @@ bool ofxRs2ProjectorToolkit::saveCalibration(string path){
 	xml.addChild("RESOLUTIONS");
 	xml.setTo("RESOLUTIONS");
 	xml.addValue("PROJECTOR", projRes);
-	xml.addValue("KINECT", rs2Res);
+	xml.addValue("RS2", rs2Res);
 	xml.setTo("//CALIBRATION");
 	xml.addChild("COEFFICIENTS");
 	xml.setTo("COEFFICIENTS");

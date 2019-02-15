@@ -1,5 +1,5 @@
 <SURFACERENDERERSETTINGS>
 	<colorMapFile>HeightColorMap.xml</colorMapFile>
-	<drawContourLines>0</drawContourLines>
+	<drawContourLines>1</drawContourLines>
 	<contourLineDistance>16.21</contourLineDistance>
 </SURFACERENDERERSETTINGS>
