@@ -27,10 +27,10 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 using namespace ofxCSG;
 
-SandSurfaceRenderer::SandSurfaceRenderer(std::shared_ptr<Rs2Projector> const& k, std::shared_ptr<ofAppBaseWindow> const& p)
+SandSurfaceRenderer::SandSurfaceRenderer(std::shared_ptr<Rs2Projector> const& r, std::shared_ptr<ofAppBaseWindow> const& p)
 :settingsLoaded(false),
 editColorMap(false){
-    rs2Projector = k;
+    rs2Projector = r;
     projWindow = p;
 }
 
@@ -265,7 +265,6 @@ void SandSurfaceRenderer::drawSandbox() {
     heightMapShader.setUniform1f("contourLineFactor", contourLineFactor);
     heightMapShader.setUniform1i("drawContourLines", drawContourLines);
     mesh.draw();
-    // mesh.save("/Users/kexgaku/OF/of_v0.9.8_osx_release/apps/magic-sand/bin/test_image/sandbox.png");
     heightMapShader.end();
     rs2Projector->unbind();
     fboProjWindow.end();
@@ -283,7 +282,6 @@ void SandSurfaceRenderer::prepareContourLinesFbo()
     elevationShader.setUniform2f("depthTransformation",ofVec2f(FilteredDepthScale,FilteredDepthOffset));
     elevationShader.setUniform4f("basePlaneEq", basePlaneEq);
     mesh.draw();
-    // mesh.save("/Users/kexgaku/OF/of_v0.9.8_osx_release/apps/magic-sand/bin/test_image/preparemesh.png");
     elevationShader.end();
     rs2Projector->unbind();
     contourLineFramebufferObject.end();

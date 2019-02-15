@@ -64,7 +64,7 @@ private:
 
 class SandSurfaceRenderer {
 public:
-    SandSurfaceRenderer(std::shared_ptr<Rs2Projector> const& k, std::shared_ptr<ofAppBaseWindow> const& p);
+    SandSurfaceRenderer(std::shared_ptr<Rs2Projector> const& r, std::shared_ptr<ofAppBaseWindow> const& p);
     
     // Main loop function
     void setup(bool sdisplayGui);
