@@ -65,15 +65,12 @@ bool setWindowDimensions(ofGLFWWindowSettings& settings, int windowsNum) {
 //========================================================================
 int main() {
 	ofGLFWWindowSettings settings;
-//	setFirstWindowDimensions(settings);
-	//settings.width = 1200;
- //	settings.height = 600;
     settings.width = 1600; // Default settings
     settings.height = 800;
     settings.setPosition(ofVec2f(0, 0));
 	settings.resizable = true;
 	settings.decorated = true;
-	settings.title = "Magic-Sand " + MagicSandVersion;
+    settings.title = "Magic-Sand for RealSense2 " + MagicSandVersion;
 	shared_ptr<ofAppBaseWindow> mainWindow = ofCreateWindow(settings);
     
 	setWindowDimensions(settings, 0);
@@ -86,7 +83,6 @@ int main() {
 	settings.shareContextWith = mainWindow;
 	shared_ptr<ofAppBaseWindow> secondWindow = ofCreateWindow(settings);
 	secondWindow->setVerticalSync(false);
-
 	shared_ptr<ofApp> mainApp(new ofApp);
 	ofAddListener(secondWindow->events().draw, mainApp.get(), &ofApp::drawProjWindow);
 	mainApp->projWindow = secondWindow;

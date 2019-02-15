@@ -1232,8 +1232,8 @@ void Rs2Projector::drawMainWindow(float x, float y, float width, float height){
 
 	if (displayGui)
 	{
+        StatusGUI->draw();
 		gui->draw();
-		StatusGUI->draw();
 	}
 }
 
@@ -1483,7 +1483,9 @@ void Rs2Projector::setupGui(){
     StatusGUI->addLabel("Calibration Error Count");
 	StatusGUI->addLabel("Projector Status");
 	StatusGUI->addHeader(":: Status ::", false);
+    StatusGUI->addBreak();
 	StatusGUI->setAutoDraw(false);
+    updateStatusGUI();
 }
 
 
