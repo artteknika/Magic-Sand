@@ -1469,7 +1469,8 @@ void Rs2Projector::setupGui(){
 	// disactivate autodraw
 	gui->setAutoDraw(false);
 
-    StatusGUI = new ofxDatGui( ofxDatGuiAnchor::BOTTOM_LEFT );
+    StatusGUI = new ofxDatGui( ofxDatGuiAnchor::TOP_LEFT );
+    
 	StatusGUI->addLabel("Application Status");
 	StatusGUI->addLabel("Rs2 Status");
     StatusGUI->addLabel("Ready Calibration");
