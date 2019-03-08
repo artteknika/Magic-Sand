@@ -189,22 +189,22 @@ bool ColorMap::createFile(string filename) {
 
     int numKeys;
     {
-        heightMapKeys.push_back( HeightMapKey(-220.0,ofColor(0, 0,  0)));
-        heightMapKeys.push_back( HeightMapKey(-200.0,ofColor(0, 0,  80)));
-        heightMapKeys.push_back( HeightMapKey(-170.0,ofColor(0,  30, 100)));
-        heightMapKeys.push_back( HeightMapKey(-150.0,ofColor(0,  50, 102)));
-        heightMapKeys.push_back( HeightMapKey(-125,ofColor(19, 108, 160)));
-        heightMapKeys.push_back( HeightMapKey(-100.0,ofColor(24, 140, 205)));
-        heightMapKeys.push_back( HeightMapKey(-50.0,ofColor(135, 206, 250)));
-        heightMapKeys.push_back( HeightMapKey(-25.0,ofColor(176, 226, 255)));
+        heightMapKeys.push_back( HeightMapKey(-500.0,ofColor(0, 0,  0)));
+        heightMapKeys.push_back( HeightMapKey(-400.0,ofColor(0, 0,  80)));
+        heightMapKeys.push_back( HeightMapKey(-350.0,ofColor(0,  30, 100)));
+        heightMapKeys.push_back( HeightMapKey(-300.0,ofColor(0,  50, 102)));
+        heightMapKeys.push_back( HeightMapKey(-225,ofColor(19, 108, 160)));
+        heightMapKeys.push_back( HeightMapKey(-200.0,ofColor(24, 140, 205)));
+        heightMapKeys.push_back( HeightMapKey(-150.0,ofColor(135, 206, 250)));
+        heightMapKeys.push_back( HeightMapKey(-100.0,ofColor(176, 226, 255)));
         heightMapKeys.push_back( HeightMapKey(0.0,ofColor(0,  97,  71)));
-        heightMapKeys.push_back( HeightMapKey(25.0,ofColor(16, 122,  47)));
-        heightMapKeys.push_back( HeightMapKey(50,ofColor(232, 215, 125)));
-        heightMapKeys.push_back( HeightMapKey(100,ofColor(161,  67,   0)));
-        heightMapKeys.push_back( HeightMapKey(125,ofColor(130,  30,  30)));
-        heightMapKeys.push_back( HeightMapKey(140,ofColor(161, 161, 161)));
-        heightMapKeys.push_back( HeightMapKey(200,ofColor(206, 206, 206)));
-        heightMapKeys.push_back( HeightMapKey(220,ofColor(255, 255, 255)));
+        heightMapKeys.push_back( HeightMapKey(100.0,ofColor(16, 122,  47)));
+        heightMapKeys.push_back( HeightMapKey(150,ofColor(232, 215, 125)));
+        heightMapKeys.push_back( HeightMapKey(200,ofColor(161,  67,   0)));
+        heightMapKeys.push_back( HeightMapKey(225,ofColor(130,  30,  30)));
+        heightMapKeys.push_back( HeightMapKey(250,ofColor(161, 161, 161)));
+        heightMapKeys.push_back( HeightMapKey(300,ofColor(206, 206, 206)));
+        heightMapKeys.push_back( HeightMapKey(350,ofColor(255, 255, 255)));
     }
 
     ofxXmlSettings positions;

@@ -59,11 +59,11 @@ Refer to [Magic-sand](https://github.com/thomwolf/Magic-Sand).
 
 ### Source Cod
 
-This software source code based on [Magic-sand](https://github.com/thomwolf/Magic-Sand). But you aren't able to launch this software by connecting kinect. This software needs to connect RealSense2.
+This software source code based on [Magic-sand](https://github.com/thomwolf/Magic-Sand). But you aren't able to launch this software by connecting realsense2. This software needs to connect RealSense2.
 
 ### Create development environment
 
-#### installation packages, SDK
+#### Installation packages, SDK
 
 We need development environment when add functions to this software.
 Please launch this command
@@ -93,7 +93,7 @@ open librealsense2.xcodeproj
 
   - Build target change `All` to `realsense-viewer`, launch SDK.
 
-  - if build successful, build target change `import`, launch SDK.
+  - if it build successful, build target change `import`, launch SDK.
 
   - After build successful, Check `/usr/local/lib/librealsense2.2.dylib`
 
@@ -125,14 +125,17 @@ this software needs ofxRealSense2.
 Basically Refer to [Magic-sand](https://github.com/thomwolf/Magic-Sand).
 This software needs openFrameworks version 0.9.8.
 
+### Point to change
+
+    Note Changed scripts
+
+      * `KinectProjector` -> `Rs2Projector`
+      * `KinectGrabber` -> `Rs2Grabber`
+      * `KinectProjectorCalibration` -> `Rs2ProjectorCalibration`
+      * `SandSurfaceRenderer`
+
 ### How it can be used
 
-Note Changed scripts
-
-  * `KinectProjector` -> `Rs2Projector`
-  * `KinectGrabber` -> `Rs2Grabber`
-  * `KinectProjectorCalibration` -> `Rs2ProjectorCalibration`
-  * `SandSurfaceRenderer`
 
 `Rs2Projector` class handles the communication with the realsense2 sensor, the calibration and the coordinates conversions between realsense2 (2D), world (3D) and projector (2D) coordinate systems.
 
@@ -173,7 +176,7 @@ void ofApp::update(){
 void ofApp::drawProjWindow(ofEventArgs &args){
   rs2Projector->drawProjectorWindow();
 
-  if (!kinectProjector->isCalibrating()){
+  if (!rs2Projector->isCalibrating()){
       sandSurfaceRenderer->drawProjectorWindow();
       fboVehicles.draw(0,0);
   }
@@ -221,14 +224,14 @@ Another value that can be used is the `elevation` which is the distance from a p
 
 `elevation` can be converted/accessed by the following functions:
 ```
-float elevationAtKinectCoord(float x, float y);
-float elevationToKinectDepth(float elevation, float x, float y);
+float elevationAtRs2Coord(float x, float y);
+float elevationToRs2Depth(float elevation, float x, float y);
 ```
 
 `Rs2Projector` also store a matrix of gradients of the realsense depth in the world coordinate system (slope of the sand) computed with a given resolution (with a 10 pixels bin by default).
 The gradient at a given location can be accessed by:
 ```
-ofVec2f gradientAtKinectCoord(float x, float y);
+ofVec2f gradientAtRs2Coord(float x, float y);
 ```
 
 Source: [Magic-sand](https://github.com/thomwolf/Magic-Sand)
@@ -248,7 +251,7 @@ The following functions can be called to change some internal values of `rs2Proj
 - `setSpatialFiltering(bool sspatialFiltering)`: toggle the spatial filtering of the depth frame
 - `setFollowBigChanges(bool sfollowBigChanges)`: toggle "big change" detection (follow the hand of the user).
 
-#### Kinect projector state functions
+#### RealSense2 projector state functions
 
 The following functions give information of the state of the realsense object:
 - `isCalibrating()`: is the `rs2Projector` currently performing a calibration
@@ -258,7 +261,7 @@ The following functions give information of the state of the realsense object:
 - `isROIUpdated()`: was the sand region location/extension updated in the previous call to `update()'
 - `isCalibrationUpdated()`: was the calibration updated in the previous call to `update()`
 
-#### Kinect projector other getters
+#### RealSense2 projector other getters
 The following functions give additional information :
 - `getRs2ROI()`: get the sand region location/extension
 - `getRs2Res()`: get the realsense resolution
@@ -278,5 +281,80 @@ Magic Sand does not provide dynamic rain features (typically require a stronger 
 
 Source: [Magic-sand](https://github.com/thomwolf/Magic-Sand)
 
+## points to change
+
+### Script, Directory name
+    * `KinectProjector` -> `Rs2Projector`
+        - `KinectGrabber.cpp` -> `Rs2Grabber.cpp`
+        - `KinectGrabber.h` -> `Rs2Grabber.h`
+        - `KinectProjector.h` -> `Rs2Projector.h`
+        - `KinectProjector.cpp` -> `Rs2Projector.cpp`
+        - `KinectProjectorCalibration.h` -> `Rs2ProjectorCalibration.h`
+        - `KinectProjectorCalibration.cpp` -> `Rs2ProjectorCalibration.cpp`
+    * `SandSurfaceRenderer`
+        - `SandSurfaceRenderer.cpp`
+        - `SandSurfaceRenderer.h`
+        - `ColorMap.h`
+        - `ColorMap.cpp`
+#### main points of modification
+    * `Rs2Projector`
+        - `Rs2Grabber.cpp`
+        - `Rs2Grabber.h`
+        - `Rs2Projector.h`
+        - `Rs2Projector.cpp`
+    * `SandSurfaceRenderer`
+        - `SandSurfaceRenderer.cpp`
+
+#### minor changes
+    * `Rs2Projector`
+        - `Rs2ProjectorCalibration.h`
+        - `Rs2ProjectorCalibration.cpp`
+    * `SandSurfaceRenderer`
+        - `SandSurfaceRenderer.h` 
+        - `ColorMap.h`
+        - `ColorMap.cpp`
 # Changelog
-Refer to [Magic-sand](https://github.com/thomwolf/Magic-Sand)
+
+## [1.5.4.1 for RealSense2]() - - -2019
+Supported RealSense2
+### Bug fixes
+    - a draw depth frame was broken in 1.5.4.1 - it did not show depth frame. Now fixes
+
+## Changed
+    - refer to Point to change
+    - We can run this software of RealSense2
+
+## [1.5.4.1](https://github.com/thomwolf/Magic-Sand/releases/tag/v1.5.4.1) - 10-10-2017
+Bug fix release
+
+### Bug fixes
+    - The calibration procedure was broken in 1.5.4 - it did not show the checkerboard. Now fixed.
+
+### Added
+    - Linux make files (experimental)
+
+## [1.5.4](https://github.com/thomwolf/Magic-Sand/releases/tag/v1.5.4) - 23-09-2017
+
+Minor release of Magic-Sand-with-Games
+
+### Added
+    - Kinect FPS counter for received frames
+    - XCode build files
+    - Full frame filter option
+    - Simple InPainting option for removing outliers in the depth map
+    - Better scaling of GUI
+    - Debug feature: Kinect ROI can be seen on projector
+    - Debug feature: Left mouse click in Kinect depth view will print depth coordinates on console
+    - ChangeLog to the README
+
+### Changed
+    - Animals in animal game is now flipped depending on Kinect-projector matrix - so hopefully no more backwards swimming
+    - GUI update for animal game. Now updates animal numbers
+    - Adjusted game constants for animal game.
+    - Added beginner/novice/normal/expert game mode. Press 1, 2, 3 or 4 to start the different modes.
+
+### Bug fixes
+    - Spatial filter now correctly filters the ROI
+
+## [1.5.0](https://github.com/thomwolf/Magic-Sand/tree/v1.5) - 08-08-2017
+        Initial release of Magic-Sand with Games

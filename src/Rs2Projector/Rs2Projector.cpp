@@ -1,9 +1,4 @@
 /***********************************************************************
-Rs2Projector  Rs2Projector takes care of the spatial conversion between the
-various coordinate systems, control the Rs2grabber and perform the calibration of
-the rs2 and projector.
-Copyright (c) 2019 Keisuke Nakamura
- 
 KinectProjector - KinectProjector takes care of the spatial conversion
 between the various coordinate systems, control the kinectgrabber and
 perform the calibration of the kinect and projector.
@@ -128,7 +123,7 @@ void Rs2Projector::setup(bool sdisplayGui)
     // Setup gradient field
     setupGradientField();
     
-    //init FBOprojector
+    // init FBOprojector
     init_FBOprojector();
     
     fboMainWindow.allocate(rs2Res.x, rs2Res.y, GL_RGBA);
@@ -401,6 +396,7 @@ void Rs2Projector::update()
 		ofSetColor(0, 0, 255);
 		ofRectangle tempRect2(ofPoint(UL.x - 2, UL.y - 2), ofPoint(UL.x + 2, UL.y + 2));
 		ofDrawRectangle(tempRect2);
+        basePlaneOffset.z = (int)basePlaneOffset.z;
 
 		// Draw rectangle of ROI using the offset by the waterlevel
 		UL = rs2CoordToProjCoord(rs2ROI.getMinX(), rs2ROI.getMinY(), basePlaneOffset.z);
@@ -873,6 +869,7 @@ void Rs2Projector::updateProjRs2AutoCalibration()
 				updateStatusGUI();
 				return;
 			}
+            init_FBOprojector();
 
 			// Rasmus update - I am not sure it is good to override the manual ROI
 			// updateROIFromCalibration(); // Compute the limite of the ROI according to the projected area 
@@ -1472,7 +1469,7 @@ void Rs2Projector::setupGui(){
 	// disactivate autodraw
 	gui->setAutoDraw(false);
 
-	StatusGUI = new ofxDatGui(ofxDatGuiAnchor::BOTTOM_LEFT);
+    StatusGUI = new ofxDatGui( ofxDatGuiAnchor::BOTTOM_LEFT );
 	StatusGUI->addLabel("Application Status");
 	StatusGUI->addLabel("Rs2 Status");
     StatusGUI->addLabel("Ready Calibration");
@@ -1484,7 +1481,7 @@ void Rs2Projector::setupGui(){
 	StatusGUI->addLabel("Projector Status");
 	StatusGUI->addHeader(":: Status ::", false);
     StatusGUI->addBreak();
-	StatusGUI->setAutoDraw(false);
+    StatusGUI->setAutoDraw(false);
     updateStatusGUI();
 }
 

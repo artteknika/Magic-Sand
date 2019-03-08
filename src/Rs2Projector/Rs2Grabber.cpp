@@ -1,8 +1,4 @@
 /***********************************************************************
-Rs2Grabber - Rs2Grabber accept RealSense2. Rs2Grabber takes
-care of the communication with RealSense2.
-Copyright (c) 2019 Keisuke Nakamura
-
 KinectGrabber - KinectGrabber takes care of the communication with
 the kinect and the filtering of depth frame.
 Copyright (c) 2016 Thomas Wolf

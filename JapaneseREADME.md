@@ -10,7 +10,7 @@ Magic Sand For RealSense は [Augmented Reality Sandbox](https://arsandbox.ucdav
   * openFrameworks of_v0.9.88_osx_release
  - 開発環境
   * Max OS X High Sierra Ver.10.13.6
-  * openFrameworks of_v0.9.8_osx_release
+  * Xcode ver 9.3.1
   * [RealSense SDK](https://github.com/IntelRealSense/librealsense) ver v2.13.0
  - ハードウェア
   * Intel Real Sense 2 435 (動作確認済み)
@@ -18,7 +18,7 @@ Magic Sand For RealSense は [Augmented Reality Sandbox](https://arsandbox.ucdav
 
 プロジェクターとRealSense2をPCに繋げます．
 プロジェクターのセンシングを行うために，キャリブレーションを行います．
-キャリブレーション成功後，RealSense2から深さのセンシングを行い，そのセンシングのデータを元にプロジェクターに投影します．
+キャリブレーション成功後，RealSense2から深さのセンシングを行い，そのキャリブレーションのデータを元にプロジェクターに投影します．
 
 ## Getting started
 
@@ -27,7 +27,7 @@ Magic Sand For RealSense は [Augmented Reality Sandbox](https://arsandbox.ucdav
 [tutorial page](https://imgur.com/gallery/Q86wR) に設定のことについて記述されています．　
 [reddit thread](https://www.reddit.com/r/DIY/comments/4v1gfi/a_magic_sandbox_i_made_for_my_3_yo_sons_birthday/)　も参考にしてください．
 
-また，[tutorial page](https://imgur.com/gallery/Q86wR)と[reddit thread](https://www.reddit.com/r/DIY/comments/4v1gfi/a_magic_sandbox_i_made_for_my_3_yo_sons_birthday/)はハードウェアがKinectで行なっていますが，このソフトウェアはRealSense2で行います．
+また，[tutorial page](https://imgur.com/gallery/Q86wR)と[reddit thread](https://www.reddit.com/r/DIY/comments/4v1gfi/a_magic_sandbox_i_made_for_my_3_yo_sons_birthday/)はKinectで行なっていますが，このバージョンはRealSense2で動作します．
 
 ### Setting up the system
 
@@ -44,7 +44,7 @@ magic-sandを実行すると，深さとカラーイメージをRealSense2が取
   - キャリブレーション時のエラー回数
   - プロジェクターの解像度
 
-In **setup** mode the physical positions of the Kinect and projector can be optimised.
+In **setup** mode the physical positions of the RealSense2 and projector can be optimised.
 
 ### Calibration
 
@@ -53,11 +53,11 @@ In **setup** mode the physical positions of the Kinect and projector can be opti
 - RealSense2 から深さのイメージとカラーイメージがとれているかを確認してください． **advanced|Display Rs2 Depth View** で確認
 - **Calibration|Manually Draw Sand Region** を押してください．
 - カラーイメージもしくは深さイメージのどちらかでキャリブレーションの範囲を四角形を定義してください．
-- **Automatically Calibrate Kinect & Projector** をおして一連のキャリブレーションの流れを行なってください
+- **Automatically Calibrate Rs2 & Projector** をおして一連のキャリブレーションの流れを行なってください
 - `Please cover the sandbox with a board and press ok.` のメッセージが出てきたら砂場の上から板を被せてokを押してください
 - 板の上にチェスボードが投影されて，サイドキャリブレーションが行われます．
 
-StatusにCalibration succesfulが表示されたら，キャリブレーションは成功です．
+StatusにCalibration successfulが表示されたら，キャリブレーションは成功です．
 
 #### Debug mode for calibration
 キャリブレーションを行なって失敗した場合は以下のフォルダーを参照してください **data\DebugFiles**
@@ -70,90 +70,22 @@ StatusにCalibration succesfulが表示されたら，キャリブレーショ�
 
 ## Sandbox games
 
-## RealSense2 対応版では有効化しておりません．
-There are a few games included in Magic-Sand
+### RealSense2 対応版では有効化しておりません．
 
-### Shape an Island
-The background for the game is that Denmark have more than [400 Islands](https://en.wikipedia.org/wiki/List_of_islands_of_Denmark) and we wanted to create a game that could teach people about islands. We added a few non-Danish Islands as well.
-The aim of the game is to shape an Island that matches a given Island. Only the outer contour of the Island is compared (not the height). The game is played like this:
-
-- Press **space** to start the game - now a welcome screen appear
-- Shape a big island in the middle of the box (you have 30 seconds). It must NOT be connected to the edge of the box.
-- The application will check if an Island exists and if not will let you try again
-- Now a name of a given Island is given and you are to shape that specific Island (Australia for example)
-- After 30 seconds the application will match your Island with the given Island and show you the results and a score
-- Now you have 1 minute to reshape your Island
-- Yet another intermediate results will be shown
-- Now you have 30 seconds to finalise your Island
-- A final result is computed and your score is compared to the overall high-score
-
-It is possible to add more Islands.  Instructions will be added later.
-
-This game was used in an educational event at the Danish Island Bornholm as seen in this [video](https://www.youtube.com/watch?v=dDMrxtH1hyU).
-
-This game was mainly developed by Rasmus R. Paulsen.
-
-### The Sandimals 2-player game
-In this game the box is divided into two halfes where each player is only allowed to move the sand in his half. The goal is collect as much **food** and as many **skins** as possible in **5 minutes**. You get **skins** by having rabbits on your half and you get **food** by having fish on your half. The more rabbit the more skins per second. The more and bigger fish the more food per second.
-
-Before starting the game you should flatten the sand and shape a big lake in the middle of the box.
-
-The game is started by pressing **f** on the keyboard. After 5 minutes the game stop and the player who has the most **food+skins** wins the game.
-
-You can also start the game by pressing **1** (complete beginner), **2** (novice), **3** (standard) and **4** (expert).
-
-The behaviour of **fish**:
-- fish are light gray
-- there is always a fixed number of fish (10, 20, 30 depending on level) in the box
-- their speed is determined by their size
-- they move in flocks
-- they flee from sharks (they will get a **red** center)
-- they have a limited life-span (they have a **grey** center when they are soon dying)
-- they respawn at the current mother fish
-- if a fish is eaten by a shark it respawns as a baby fish by the current mother fish
-- the mother fish has a **pink** center
-- the current mother fish is the oldest fish in the box
-- if a fish ends on land it will seek downwards to find water
-
-The behaviour of **sharks**:
-- the shark is white
-- there is always 2 sharks in the box
-- they move slow and have a **white** stomach when they are well fed
-- they get a **black** stomach when they are hungry but not hunting
-- they get a **red** stomach when they are hunting and will move fast
-- there is a chance they will start hunting when they are hungry
-- they will hunt the biggest fish that are close to them
-- if they catch the fish they eat it and their hunger decrease.
-- if the hunger get too much (if they are trapped) they will die
-- if a shark die a new shark respawns
-- a shark respawns where there is the highest density of fish
-- if they end on land they will seek downwards to find water
-
-The behaviour of **rabbits**:
-- there is always a fixed number (4, 6 or 10 depending on level) of rabbits in the box
-- they move and stop
-- they live on land
-
-Fish and sharks can be taken and moved using your hands if you shape them like a bowl.
-
-This game was mainly developed by Rasmus R. Paulsen.
-
-### The animal and their mothers game
-
-A mother fish and a mother rabbit can be enabled. The user can help the animals to reach their mothers by digging rivers or building mountains in the sand.
-
-The game is started by pressing **m** on the keyboard.
-
-This game was mainly developed by Thomas Wolfe.
+### 有効化する場合
+    * `src/SandSurfaceRenderer/SandSurfaceRenderer.cpp`を変更してください．
 
 ## Coding and Extending Magic Sand
 
 ### Source Code
 このソフトウェアのベースとなった Kinect 用のソースコードは以下のリンクになります．
  [github.com/thomwolf/Magic-Sand](https://github.com/thomwolf/Magic-Sand).
-RealSense2 版はこちら
+ このバージョンはRealSenseをサポートしています．
 
 ### Create environment
+RealSense2用の環境構築になります．
+#### [Tips]
+    * RealSense2 の SDKが不安定なので前述したバージョン以外で実行した場合動かないという場合が起こり得ます．
 
 #### Intel RealSense2 SDKのクローン
 RealSense2でこのソフトウェアをデバッグする際に，外部のSDKなどが必要になります．以下のコマンドを用いてSDKを導入します．
@@ -243,21 +175,21 @@ void ofApp::setup() {
 ```
 `setup(true)` が呼ばれると `rs2Projector` と `sandSurfaceRenderer` のGUIが表示されることを示しています.
 
-`kinectProjector` オブジェクトはopenFrameworksの標準関数である `update()` で更新をすることが必要になります．その後 `draw()`でプロジェクターに描画します．
+`rs2Projector` オブジェクトはopenFrameworksの標準関数である `update()` で更新をすることが必要になります．その後 `draw()`でプロジェクターに描画します．
 
-`kinectProjector` オブジェクトは `kinectProjector->drawProjectorWindow()`を読んだ後，キャリブレーション時にプロジェクターが投影しているウィンドウを占有してしまうため，プロジェクターウィンドウには何も描画しないように注意してください．  現在キャリブレーションが行われているならば，その状態を`kinectProjector->isCalibrating()`で確認できます.
+`rs2Projector` オブジェクトは `rs2Projector->drawProjectorWindow()`を読んだ後，キャリブレーション時にプロジェクターが投影しているウィンドウを占有してしまうため，プロジェクターウィンドウには何も描画しないように注意してください．  現在キャリブレーションが行われているならば，その状態を`rs2Projector->isCalibrating()`で確認できます.
 
 `update()` や `draw()` がシンプルなサンドボックスの実装をしてくれています． `rs2Projector` と `sandSurfaceRenderer` オブジェクトはプロジェクターウィンドウが`drawProjWindow(ofEventArgs &args)`をコールバックで読んだ際に，内部は初期化されています．(`main.cpp`を参照してください).
 
 ```
 void ofApp::update(){
-  kinectProjector->update();
+  rs2Projector->update();
   sandSurfaceRenderer->update();
 }
 void ofApp::drawProjWindow(ofEventArgs &args){
-  kinectProjector->drawProjectorWindow();
+  rs2Projector->drawProjectorWindow();
 
-  if (!kinectProjector->isCalibrating()){
+  if (!Projector->isCalibrating()){
       sandSurfaceRenderer->drawProjectorWindow();
       fboVehicles.draw(0,0);
   }
@@ -286,8 +218,8 @@ ofMatrix4x4 getTransposedRs2ProjMatrix();
 - 現実空間と連動するシステム : xyz座標のRealSense2から取得される㎜単位の座標値を座標データのxyz軸データを拡張しています．
 - プロジェクターの連動システム : xy座標のピクセルデータを左上端を原点に変換する処理を行なっています．
 
-The most straighforward conversion goes from kinect coordinates to world coordinate system and projector coordinate system.
-If you want to animate or display objects, a natural choice would thus be to store then in kinect coordinate and to perform the conversion on display.
+もっとも簡単なrealsense2から取得する座標をワールド座標とプロジェクターの座標に変換し連動するものです。
+もし、アニメーションをするオブジェクトを表示したいならば、普通はこのようにrealsense2の連動された値を格納し、表示の変換を行います。
 
 以下の関数が連携システムの変換を行うものです:
 ```
@@ -295,100 +227,127 @@ ofVec2f worldCoordToProjCoord(ofVec3f vin);
 ofVec3f projCoordAndWorldZToWorldCoord(float projX, float projY, float worldZ);
 ofVec2f rs2CoordToProjCoord(float x, float y);
 ofVec3f rs2CoordToWorldCoord(float x, float y);
-ofVec2f worldCoordTokinectCoord(ofVec3f wc);
+ofVec2f worldCoordTors2Coord(ofVec3f wc);
 ```
 
 `elevation` は，三次元空間でどれくらい離れているかを連動しているものです:
-- a normal (`getBasePlaneNormal()`) and an offset (`getBasePlaneOffset()`), or
-- a plane equation (`getBasePlaneEq()`).
+- (`getBasePlaneNormal()`) は面法線を取得し、(`getBasePlaneOffset()`)　は平面の補正値を返します
+- (`getBasePlaneEq()`) は平面方程式です。
 
-`elevation` can be converted/accessed by the following functions:
+`elevation` は以下の関数で変換/取得をすることができます。
 ```
-float elevationAtKinectCoord(float x, float y);
-float elevationToKinectDepth(float elevation, float x, float y);
+float elevationAtRs2Coord(float x, float y);
+float elevationToRs2Depth(float elevation, float x, float y);
 ```
 
-`KinectProjector` also store a matrix of gradients of the kinect depth in the world coordinate system (slope of the sand) computed with a given resolution (with a 10 pixels bin by default).
-The gradient at a given location can be accessed by:
+`Rs2Projector` もまた，realsenseから取得する深さの勾配の値をワールド座標値を連動するものに格納することができ，解像度を用いて計算を行うことができます。
+x,yで指定する座標の勾配を取得するのは以下の関数で可能です。
 ```
-ofVec2f gradientAtKinectCoord(float x, float y);
+ofVec2f gradientAtRs2Coord(float x, float y);
 ```
 
 #### Setup & calibration functions
-`startFullCalibration()` perfoms an automatic calibration of the kinect and the projector.
-An automatic calibration comprises:
-- ask the user to flatten the sand,
-- measure the average plane formed by the sand surface to define the base plane (see above),
-- display and find 5 chess boards (60 calibration points) on the sand surface,
-- ask the user to cover the sand with a board,
-- display and find 5 chess boards (60 calibration points) on the board surface,
-- set the detection ceiling to 50 milimeters above the board.
+`startFullCalibration()` プロジェクターとrealsenseの自動のキャリブレーションを行う関数です。
+自動キャリブレーションの処理構造は以下のようになります:
+- キャリブレーションを行うユーザに対して砂場が平坦かを尋ねます。
+- 基準平面を定義するために、平均平面を砂場の表面から形作ります。
+- 砂場の表面に5つのチェスボードを表示し、認識させます。
+- ユーザに砂の上に板をかぶせるように尋ねます。
+- 砂場の表面に10個のチェスボードを表示し、認識させます。
+- 50mm以上の板を検出します。
 
-The following functions can be called to change some internal values of `kinectProjector`:
-- `setGradFieldResolution(int gradFieldResolution)`: change the resolution of the gradient field
-- `setSpatialFiltering(bool sspatialFiltering)`: toggle the spatial filtering of the depth frame
-- `setFollowBigChanges(bool sfollowBigChanges)`: toggle "big change" detection (follow the hand of the user).
+`rs2Projector`の以下の関数を呼ぶことによって内部の値を変更することができます。:
+- `setGradFieldResolution(int gradFieldResolution)`: 平面の勾配の解像度を変更することができます。
+- `setSpatialFiltering(bool sspatialFiltering)`: 深さを取得しているフレームの空間フィルターをトグルで切り替えることができます。
+- `setFollowBigChanges(bool sfollowBigChanges)`: 検出の大きな変更ををトグルで切り替えることができます。
 
-#### Kinect projector state functions
+#### Rs2 projector state functions
 
-The following functions give information of the state of the kinectprojector object:
-- `isCalibrating()`: is the `kinectProjector` currently performing a calibration
-- `isCalibrated()`: is the `kinectProjector` calibrated (calibration file found or calibration performed)
-- `isImageStabilized()`: is the depth frame stabilized (arbitrary time frame after initialisation)
-- `isBasePlaneUpdated()`: was the base plane updated in the previous call to `update()'
-- `isROIUpdated()`: was the sand region location/extension updated in the previous call to `update()'
-- `isCalibrationUpdated()`: was the calibration updated in the previous call to `update()'
+`rs2projector` オブジェクトの状態の情報を以下の関数によって表示することができます。:
+- `isCalibrating()`: `rs2tProjector` 現在のキャリブレーションの状態を取得します。
+- `isCalibrated()`: `rs2Projector` キャリブレーションをされているかを取得します。
+- `isImageStabilized()`: 深さを取得しているフレームが安定しているかを取得します。この値によってキャリブレーションの準備ができているかを取得します。
+- `isBasePlaneUpdated()`: `update()`を呼ぶ前に基準平面の更新をします。
+- `isROIUpdated()`: `update()` を呼ぶ前に砂のROIを更新します。
+- `isCalibrationUpdated()`:  `update()` を呼ぶ前にキャリブレーションの状態を更新します。
 
-#### Kinect projector other getters
-The following functions give additional information :
-- `getKinectROI()`: get the sand region location/extension
-- `getKinectRes()`: get the kinect resolution
-- `getBasePlaneNormal()` : see above
-- `getBasePlaneOffset()` : see above
-- `getBasePlaneEq()` : see above
+#### Rs2 projector other getters
+追加の`rs2Projector`の追加の情報を以下の関数によって取得することができます。 :
+- `getRs2ROI()`:　砂場のROIを取得することができます。
+- `geRs2Res()`: realsense2の解像度を取得することができます。
+- `getBasePlaneNormal()` : 上記を参照してください
+- `getBasePlaneOffset()` : 上記を参照してください
+- `getBasePlaneEq()` : 上記を参照してください
 
-## Main differences with [SARndbox](https://github.com/KeckCAVES/SARndbox)
+## points to change
 
-Magic Sand is a cross-platform project while SARndbox currently is only Linux. SARndbox is inherited from a larger VR toolbox that makes is somewhat daunting to start modifying. We hope that Magic Sand is slightly easier to start with.
+### ファイル，ディレクトリ名前の変更点
+    * `KinectProjector` -> `Rs2Projector`
+        - `KinectGrabber.cpp` -> `Rs2Grabber.cpp`
+        - `KinectGrabber.h` -> `Rs2Grabber.h`
+        - `KinectProjector.h` -> `Rs2Projector.h`
+        - `KinectProjector.cpp` -> `Rs2Projector.cpp`
+        - `KinectProjectorCalibration.h` -> `Rs2ProjectorCalibration.h`
+        - `KinectProjectorCalibration.cpp` -> `Rs2ProjectorCalibration.cpp`
 
-Magic Sand uses the build-in registration feature of the kinect to perform an automatic calibration between the projector and the kinect sensor and does not use a pixel based depth calibration.
+#### 主要な変更点
+    * `Rs2Projector`
+        - `Rs2Grabber.cpp`
+        - `Rs2Grabber.h`
+        - `Rs2Projector.h`
+        - `Rs2Projector.cpp`
+    * `SandSurfaceRenderer`
+        - `SandSurfaceRenderer.cpp`
 
-It is thus probably less acurate than SARndbox.
-
-Magic Sand does not provide dynamic rain features (typically require a stronger GPU than the graphic card provided on a laptop).
+#### 軽微な変更点
+    * `Rs2Projector`
+        - `Rs2ProjectorCalibration.h`
+        - `Rs2ProjectorCalibration.cpp`
+    * `SandSurfaceRenderer`
+        - `SandSurfaceRenderer.h`
+        - `ColorMap.h`
+        - `ColorMap.cpp`
 
 # Changelog
+## [1.5.4.1 for RealSense2]() - - -2019
+Supported RealSense2
+
+## Changed
+    - refer to Point to change
+    - We can run this software of RealSense2
+
+
 ## [1.5.4.1](https://github.com/thomwolf/Magic-Sand/releases/tag/v1.5.4.1) - 10-10-2017
 Bug fix release
 
 ### Bug fixes
-- The calibration procedure was broken in 1.5.4 - it did not show the checkerboard. Now fixed.
+    - The calibration procedure was broken in 1.5.4 - it did not show the checkerboard. Now fixed.
 
 ### Added
-- Linux make files (experimental)
+    - Linux make files (experimental)
 
 ## [1.5.4](https://github.com/thomwolf/Magic-Sand/releases/tag/v1.5.4) - 23-09-2017
 
 Minor release of Magic-Sand-with-Games
 
 ### Added
-- Kinect FPS counter for received frames
-- XCode build files
-- Full frame filter option
-- Simple InPainting option for removing outliers in the depth map
-- Better scaling of GUI
-- Debug feature: Kinect ROI can be seen on projector
-- Debug feature: Left mouse click in Kinect depth view will print depth coordinates on console
-- ChangeLog to the README
+    - Kinect FPS counter for received frames
+    - XCode build files
+    - Full frame filter option
+    - Simple InPainting option for removing outliers in the depth map
+    - Better scaling of GUI
+    - Debug feature: Kinect ROI can be seen on projector
+    - Debug feature: Left mouse click in Kinect depth view will print depth coordinates on console
+    - ChangeLog to the README
 
 ### Changed
-- Animals in animal game is now flipped depending on Kinect-projector matrix - so hopefully no more backwards swimming
-- GUI update for animal game. Now updates animal numbers
-- Adjusted game constants for animal game.
-- Added beginner/novice/normal/expert game mode. Press 1, 2, 3 or 4 to start the different modes.
+    - Animals in animal game is now flipped depending on Kinect-projector matrix - so hopefully no more backwards swimming
+    - GUI update for animal game. Now updates animal numbers
+    - Adjusted game constants for animal game.
+    - Added beginner/novice/normal/expert game mode. Press 1, 2, 3 or 4 to start the different modes.
 
 ### Bug fixes
-- Spatial filter now correctly filters the ROI
+    - Spatial filter now correctly filters the ROI
 
 ## [1.5.0](https://github.com/thomwolf/Magic-Sand/tree/v1.5) - 08-08-2017
-Initial release of Magic-Sand with Games
+    Initial release of Magic-Sand with Games

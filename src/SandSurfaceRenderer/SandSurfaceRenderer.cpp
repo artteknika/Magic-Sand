@@ -94,7 +94,7 @@ void SandSurfaceRenderer::setup(bool sdisplayGui){
     
     // Calculate the  height map elevation scaling and offset coefficients
 	heightMapScale = (heightMap.getNumEntries()-1)/((elevationMax-elevationMin));
-	heightMapOffset = 0.5/heightMap.getNumEntries()-heightMapScale*elevationMin;
+	heightMapOffset = 100/heightMap.getNumEntries()-heightMapScale*elevationMin;
     
     // Calculate the contourline fbo scaling and offset coefficients
 	contourLineFboScale = elevationMin-elevationMax;
@@ -189,7 +189,7 @@ void SandSurfaceRenderer::setupMesh(){
 	for (unsigned int y = 0; y < meshheight; y++)
         for(unsigned int x=0;x<meshwidth;x++)
         {
-            ofPoint pt = ofPoint(x+rs2ROI.x,y+rs2ROI.y,0.0f)-ofPoint(0.125,0.125,0); // We move of a half pixel to center the color pixel (more beautiful)
+            ofPoint pt = ofPoint(x+rs2ROI.x,y+rs2ROI.y,0.0f)-ofPoint(0.5,0.5,0); // We move of a half pixel to center the color pixel (more beautiful)
             mesh.addVertex(pt); // make a new vertex
             mesh.addTexCoord(pt);
         }

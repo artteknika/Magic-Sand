@@ -1,9 +1,4 @@
 /***********************************************************************
-Rs2Projector  Rs2Projector takes care of the spatial conversion between the
-various coordinate systems, control the Rs2grabber and perform the calibration of
- the rs2 and projector.
- Copyright (c) 2019 Keisuke Nakamura
-
 KinectProjector - KinectProjector takes care of the spatial conversion
 between the various coordinate systems, control the Kinectgrabber and
 perform the calibration of the kinect and projector.
