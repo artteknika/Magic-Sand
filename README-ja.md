@@ -6,11 +6,11 @@ Magic Sand For RealSense は [Augmented Reality Sandbox](https://arsandbox.ucdav
 
 この開発環境と実行環境は以下のようになっています．
  - 実行環境
-  * 開発者向けノート，デスクトップ(Max OS X High Sierra Ver.10.13.6 GPU必須 実行確認済み環境)
-  * openFrameworks of_v0.9.88_osx_release
+  * 開発者向けノート，デスクトップ(Max OS X High Sierra Ver.10.13 GPU必須 実行確認済み環境)
+  * openFrameworks ver.0.9.8
  - 開発環境
-  * Max OS X High Sierra Ver.10.13.6
-  * Xcode ver 9.3.1
+  * Max OS X High Sierra Ver.10.13
+  * Xcode ver 9.3
   * [RealSense SDK](https://github.com/IntelRealSense/librealsense) ver v2.13.0
  - ハードウェア
   * Intel Real Sense 2 435 (動作確認済み)
@@ -31,7 +31,7 @@ Magic Sand For RealSense は [Augmented Reality Sandbox](https://arsandbox.ucdav
 
 ### Setting up the system
 
-プロジェクターとRealSense2をPCに繋げて，magic-sandを実行してください
+プロジェクターとRealSense2をPCに繋げて，magic-sandを実行してください．
 
 magic-sandを実行すると，深さとカラーイメージをRealSense2が取得していて，RealSense2からプロジェクターから投影されている白のイメージが見える事を確認してください．もしStatusが表示されない場合は，メインウィンドウのサイズを変更すると表示されます．
 ステータスの中のパラメータは以下のようになっています．
@@ -53,7 +53,7 @@ In **setup** mode the physical positions of the RealSense2 and projector can be 
 - RealSense2 から深さのイメージとカラーイメージがとれているかを確認してください． **advanced|Display Rs2 Depth View** で確認
 - **Calibration|Manually Draw Sand Region** を押してください．
 - カラーイメージもしくは深さイメージのどちらかでキャリブレーションの範囲を四角形を定義してください．
-- **Automatically Calibrate Rs2 & Projector** をおして一連のキャリブレーションの流れを行なってください
+- **Automatically Calibrate Rs2 & Projector** を押して一連のキャリブレーションの流れを行なってください
 - `Please cover the sandbox with a board and press ok.` のメッセージが出てきたら砂場の上から板を被せてokを押してください
 - 板の上にチェスボードが投影されて，サイドキャリブレーションが行われます．
 
@@ -64,7 +64,7 @@ StatusにCalibration successfulが表示されたら，キャリブレーショ�
 ここにキャリブレーション時の画像が保存されていて，失敗した要素を見ることができます．**advanced|Dump Debug** を有効化して，再度キャリブレーションを行なってください．
 
 ## Starting the Application
-もしキャリブレーションが終了したら **Run** のボタンをおして実行をすることができます．
+もしキャリブレーションが終了したら **Run** のボタンを押して実行をすることができます．
 
 フレームレートは60 FPS近いPCを使用してください．
 
@@ -91,8 +91,7 @@ RealSense2用の環境構築になります．
 RealSense2でこのソフトウェアをデバッグする際に，外部のSDKなどが必要になります．以下のコマンドを用いてSDKを導入します．
 あらかじめbrewは入っているものとします．
 ```
-brew install ghq # get ghq package
-ghq get IntelRealSense/librealsense # clone IntelRealSense/librealsense
+git clone https://github.com/IntelRealSense/librealsense.git # clone IntelRealSense/librealsense
 
 # get needs package
 brew install libusb pkg-config
@@ -100,14 +99,14 @@ brew install glfw
 brew install cmake
 
 # setup Build
-cd ~/.ghq/github.com/IntelRealSense/librealsense # move library
+cd ./librealsense # move library
 git reset --hard 719b0b9 # change version
 mkdir build && cd build # make build dir and move build
 sudo xcode-select --reset # init xcode-select
 cmake .. -DBUILD_EXAMPLES=true -DBUILD_WITH_OPENMP=false -DHWM_OVER_XU=false -G Xcode # cmake librealsense
 
 # Open
-open open librealsense2.xcodeproj
+open librealsense2.xcodeproj
 ```
 
 #### RealSense用のdylibの導入
@@ -120,12 +119,12 @@ open open librealsense2.xcodeproj
 
 #### XcodeのSDKへのパス
 
- - クローンしたMagic SandのBuildSettingでOTHERと検索
+ - クローンしたMagic SandをXcodeで開き magic-sand プロジェクトのBuildSettingで`OTHER Linker Flags`と検索してください
 
- - その後，`OTHER LINKER FLAGS`の中に`/usr/local/lib/librealsense2.2.dylib`のパスを追加．
+ - その後，`OTHER LINKER FLAGS`の`magic-sand`の中に実行時に読み込むリンカの設定ができるので`/usr/local/lib/librealsense2.2.dylib`のパスを追加してください．
 
 ### Dependencies
-このMagic Sand for RealSense2 は [openframeworks](http://openframeworks.cc/) release 0.9.8 を使用しています．また，Kinect版 [github.com/thomwolf/Magic-Sand](https://github.com/thomwolf/Magic-Sand) がベースとなっています．
+このMagic Sand for RealSense2 は [openframeworks](http://openframeworks.cc/) ver0.9.8 を使用しています．また，Kinect版 [github.com/thomwolf/Magic-Sand](https://github.com/thomwolf/Magic-Sand) がベースとなっています．
 以下のaddonが必要になります．
 - official addons (included in openframeworks 0.9.8)
   * ofxOpenCv
@@ -147,7 +146,7 @@ open open librealsense2.xcodeproj
 まだ [openframeworks](http://openframeworks.cc/) のドキュメントやフォーラムを見ながらコードの編集を行うとよいです．充実しています
 
 ### How it can be used
-このコードは簡単にゲームアプリケーションなどを追加，拡張できるようにデザインされています．
+このコードは簡単にゲームアプリケーションなどを追加，拡張できるように設計されています．
 
 以下にスクリプトの一部を載せていきます．
 
@@ -222,6 +221,7 @@ ofMatrix4x4 getTransposedRs2ProjMatrix();
 もし、アニメーションをするオブジェクトを表示したいならば、普通はこのようにrealsense2の連動された値を格納し、表示の変換を行います。
 
 以下の関数が連携システムの変換を行うものです:
+
 ```
 ofVec2f worldCoordToProjCoord(ofVec3f vin);
 ofVec3f projCoordAndWorldZToWorldCoord(float projX, float projY, float worldZ);
@@ -249,7 +249,7 @@ ofVec2f gradientAtRs2Coord(float x, float y);
 #### Setup & calibration functions
 `startFullCalibration()` プロジェクターとrealsenseの自動のキャリブレーションを行う関数です。
 自動キャリブレーションの処理構造は以下のようになります:
-- キャリブレーションを行うユーザに対して砂場が平坦かを尋ねます。
+- キャリブレーションを行うユーザに対して砂場が平坦かを確認します。
 - 基準平面を定義するために、平均平面を砂場の表面から形作ります。
 - 砂場の表面に5つのチェスボードを表示し、認識させます。
 - ユーザに砂の上に板をかぶせるように尋ねます。
