@@ -37,19 +37,14 @@ bool ColorMap::updateColormap() {
         /* Find the piecewise linear segment of the color function containing the key value using binary search: */
         int l = 0;
         int r = heightMapKeys.size()-1;
-		//if (i == 511)
-		//	cout << "pof" << endl;
         while(r-l>1)
         {
-            /* Enforce the invariant keys[l]<=val<keys[r]: */
             int m = (l+r)>>1;
             if(heightMapKeys[m].height<=val)
                 l=m;
             else
                 r=m;
         }
-		//if (r == 17)
-		//	cout << "paf" << endl;
 
         /* Evaluate the linear segment: */
         if(r<numEntries)

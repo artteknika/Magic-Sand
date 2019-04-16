@@ -179,7 +179,6 @@ void SandSurfaceRenderer::updateRangesAndBasePlane(){
 void SandSurfaceRenderer::setupMesh(){
     // Initialise mesh
     rs2ROI = rs2Projector->getRs2ROI();
-  //  ofVec2f rs2Res = rs2Projector->getRs2Res();
 	ofLogVerbose("SandSurfaceRenderer") << "setupMesh. Rs2ROI: " << rs2ROI;
 
     meshwidth = rs2ROI.width;

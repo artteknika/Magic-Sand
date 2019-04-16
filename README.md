@@ -1,5 +1,6 @@
 # Magic Sand For RealSense2
-This software base on [Magic-sand](https://github.com/thomwolf/Magic-Sand).
+Magic Sand is a software for operating an augmented reality sandbox like the [Augmented Reality Sandbox](https://arsandbox.ucdavis.edu)
+developped by [UC Davis](http://idav.ucdavis.edu/~okreylos/ResDev/SARndbox/).
 
 It was developed woth specific aim of simplifying the use of an augmented reality sandbox for RealSense2 in a home/family environment:
 

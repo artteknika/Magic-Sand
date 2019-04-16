@@ -255,7 +255,6 @@ void Rs2Projector::update()
     updateStatusGUI();
     // Clear updated state variables
     basePlaneUpdated = false;
-//    ROIUpdated = false;
     projRs2CalibrationUpdated = false;
 
 	// Try to open the rs2 every 3. second if it is not yet open
@@ -327,7 +326,6 @@ void Rs2Projector::update()
         } 
 		else 
 		{
-			//ofEnableAlphaBlending();
 			fboMainWindow.begin();
             if (drawRs2View || drawRs2ColorView)
 			{
@@ -495,10 +493,6 @@ void Rs2Projector::updateCalibration()
     } else if (calibrationState == CALIBRATION_STATE_ROI_AUTO_DETERMINATION){
         updateROIAutoCalibration();
     }
-	//else if (calibrationState == CALIBRATION_STATE_ROI_MANUAL_DETERMINATION)
-	//{
- //       updateROIManualCalibration();
- //   } 
 	else if (calibrationState == CALIBRATION_STATE_PROJ_RS2_AUTO_CALIBRATION){
         updateProjRs2AutoCalibration();
     }else if (calibrationState == CALIBRATION_STATE_PROJ_RS2_MANUAL_CALIBRATION) {
@@ -510,7 +504,6 @@ void Rs2Projector::updateFullAutoCalibration()
 {
     if (fullCalibState == FULL_CALIBRATION_STATE_ROI_DETERMINATION)
 	{
-//        updateROIAutoCalibration();
 		updateROIFromFile();
         if (ROICalibState == ROI_CALIBRATION_STATE_DONE) 
 		{
@@ -530,7 +523,6 @@ void Rs2Projector::updateFullAutoCalibration()
 
 void Rs2Projector::updateROIAutoCalibration()
 {
-    //updateROIFromColorImage();
     updateROIFromDepthImage();
 }
 
@@ -623,7 +615,6 @@ void Rs2Projector::updateROIFromDepthImage(){
 		while (threshold < 255){
             cvThreshold(thresholdedImage.getCvImage(), thresholdedImage.getCvImage(), 255-threshold, 255, CV_THRESH_TOZERO_INV);
             thresholdedImage.updateTexture();
-//			SaveDepthDebugImageNative(thresholdedImage, counter++);
             contourFinder.findContours(thresholdedImage, 12, rs2Res.x*rs2Res.y, 5, true, false);
             ofPolyline small = ofPolyline();
             for (int i = 0; i < contourFinder.nBlobs; i++) {
@@ -652,12 +643,10 @@ void Rs2Projector::updateROIFromDepthImage(){
             confirmModal->setTitle("Calibration failed");
             confirmModal->setMessage("The sandbox walls could not be found.");
             confirmModal->show();
-//            calibrating = false;
 			applicationState = APPLICATION_STATE_SETUP;
 			updateStatusGUI();
         } else {
             rs2ROI = large.getBoundingBox();
-//            insideROIPoly = large.getResampledBySpacing(10);
             rs2ROI.standardize();
             calibModal->setMessage("Sand area successfully detected");
             ofLogVerbose("Rs2Projector") << "updateROIFromDepthImage(): final rs2ROI : " << rs2ROI ;
@@ -665,7 +654,6 @@ void Rs2Projector::updateROIFromDepthImage(){
             if (calibrationState == CALIBRATION_STATE_ROI_AUTO_DETERMINATION)
 			{
 				applicationState = APPLICATION_STATE_SETUP;
-			//                calibrating = false;
                 calibModal->hide();
 				updateStatusGUI();
             }
@@ -711,7 +699,6 @@ void Rs2Projector::setNewRs2ROI()
 
     // Update states variables
     ROIcalibrated = true;
-//    ROIUpdated = true;
     saveCalibrationAndSettings();
     updateRs2GrabberROI(rs2ROI);
 	updateStatusGUI();
@@ -721,8 +708,6 @@ void Rs2Projector::updateRs2GrabberROI(ofRectangle ROI){
     rs2grabber.performInThread([ROI](Rs2Grabber & kg) {
         kg.setRs2ROI(ROI);
     });
-//    while (rs2grabber.isImageStabilized()){
-//    } // Wait for rs2grabber to reset buffers
     imageStabilized = false; // Now we can wait for a clean new depth frame
 }
 
@@ -877,8 +862,6 @@ void Rs2Projector::updateProjRs2AutoCalibration()
             projRs2CalibrationUpdated = true;
 			applicationState = APPLICATION_STATE_SETUP;
 			calibrationText = "Calibration successful";
-
-			//saveCalibrationAndSettings(); // Already done in updateROIFromCalibration
 			if (kpt->saveCalibration("settings/calibration.xml"))
 			{
 				ofLogVerbose("Rs2Projector") << "update(): initialisation: Calibration saved ";
@@ -983,10 +966,8 @@ void Rs2Projector::CalibrateNextPoint()
 		cv::Mat cvGrayROI = cvGrayImage(tempROI);
 
 		cv::Size patternSize = cv::Size(chessboardX - 1, chessboardY - 1);
-	//	int chessFlags = cv::CALIB_CB_ADAPTIVE_THRESH + cv::CALIB_CB_FAST_CHECK;
 		int chessFlags = 0;
 
-		//bool foundChessboard = findChessboardCorners(cvGrayImage, patternSize, cvPoints, chessFlags);
 		bool foundChessboard = findChessboardCorners(cvGrayROI, patternSize, cvPoints, chessFlags);
 
 		if (!foundChessboard)
@@ -1371,10 +1352,6 @@ ofVec3f Rs2Projector::rs2CoordToWorldCoord(float x, float y) // x, y in rs2 pixe
     ofVec4f kc = ofVec2f(x, y);
     int ind = static_cast<int>(y) * rs2Res.x + static_cast<int>(x);
     kc.z = FilteredDepthImage.getFloatPixelsRef().getData()[ind];
-	//if (kc.z == 0)
-	//	ofLogVerbose("Rs2Projector") << "rs2CoordToWorldCoord z coordinate 0";
-	//if (kc.z == 4000)
-	//	ofLogVerbose("Rs2Projector") << "rs2CoordToWorldCoord z coordinate 4000 (invalid)";
 
     kc.w = 1;
     ofVec4f wc = rs2WorldMatrix*kc*kc.z;
@@ -1449,16 +1426,7 @@ void Rs2Projector::setupGui(){
 	calibrationFolder->addButton("Automatically calibrate rs2 & projector");
 	calibrationFolder->addButton("Auto Adjust ROI");
 	calibrationFolder->addToggle("Show ROI on sand", doShowROIonProjector);
-
-	//	advancedFolder->addButton("Draw ROI")->setName("Draw ROI");
- //   advancedFolder->addButton("Calibrate")->setName("Full Calibration");
-//	advancedFolder->addButton("Update ROI from calibration");
-//    gui->addButton("Automatically detect sand region");
-//    calibrationFolder->addButton("Manually define sand region");
-//    gui->addButton("Automatically calibrate rs2 & projector");
-//    calibrationFolder->addButton("Manually calibrate rs2 & projector");
     
-//    gui->addBreak();
     gui->addHeader(":: Settings ::", false);
     
     // once the gui has been assembled, register callbacks to listen for component specific events //
@@ -2078,25 +2046,6 @@ bool Rs2Projector::getBinaryLandImage(ofxCvGrayscaleImage& BinImg)
 ofRectangle Rs2Projector::getProjectorActiveROI()
 {
 	ofRectangle projROI = ofRectangle(ofPoint(0, 0), ofPoint(projRes.x, projRes.y));
-
-	//if (rs2Opened)
-	//{
-
-	//	ofVec2f a = worldCoordTors2Coord(projCoordAndWorldZToWorldCoord(0, 0, basePlaneOffset.z));
-	//	ofVec2f b = worldCoordTors2Coord(projCoordAndWorldZToWorldCoord(projRes.x, 0, basePlaneOffset.z));
-	//	ofVec2f c = worldCoordTors2Coord(projCoordAndWorldZToWorldCoord(projRes.x, projRes.y, basePlaneOffset.z));
-	//	ofVec2f d = worldCoordTors2Coord(projCoordAndWorldZToWorldCoord(0, projRes.y, basePlaneOffset.z));
-	//	float x1 = max(a.x, d.x);
-	//	float x2 = min(b.x, c.x);
-	//	float y1 = max(a.y, b.y);
-	//	float y2 = min(c.y, d.y);
-
-	//	ofVec2f UL = rs2CoordToProjCoord(x1, y1, basePlaneOffset.z);
-	//	ofVec2f LR = rs2CoordToProjCoord(x2, y2, basePlaneOffset.z);
-	//	projROI = ofRectangle(ofPoint(UL.x, UL.y), ofPoint(LR.x, LR.y));
-	//	projROI.standardize();
-	//}
-
 	return projROI;
 }
 

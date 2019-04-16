@@ -153,9 +153,6 @@ public:
     bool isBasePlaneUpdated(){ // To be called after update()
         return basePlaneUpdated;
     }
-    //bool isROIUpdated(){ // To be called after update()  // Could be set using manual mouse based drawing and cleared before the information was propagated to other modules
-    //    return ROIUpdated;
-    //}
     bool isCalibrationUpdated(){ // To be called after update()
         return projRs2CalibrationUpdated;
     }

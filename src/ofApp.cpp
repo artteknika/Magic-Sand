@@ -44,8 +44,6 @@ void ofApp::setup() {
 	ofVec2f rs2Res = rs2Projector->getRs2Res();
 	ofVec2f projRes = ofVec2f(projWindow->getWidth(), projWindow->getHeight());
 	ofRectangle rs2ROI = rs2Projector->getRs2ROI();
-	////mainWindowROI = ofRectangle(600, 30, 600, 450);
-	//mainWindowROI = ofRectangle(0, 0, 640, 480);
 	mainWindowROI = ofRectangle((ofGetWindowWidth()-rs2Res.x)/2, (ofGetWindowHeight()-rs2Res.y)/2, rs2Res.x, rs2Res.y);
 
 	mapGameController.setup(rs2Projector);
@@ -66,7 +64,6 @@ void ofApp::update() {
 	rs2Projector->update();
    	sandSurfaceRenderer->update();
     
-    //if (rs2Projector->isROIUpdated())
 	if (rs2Projector->getRs2ROI() != mapGameController.getRs2ROI())
 	{
 		ofRectangle rs2ROI = rs2Projector->getRs2ROI();

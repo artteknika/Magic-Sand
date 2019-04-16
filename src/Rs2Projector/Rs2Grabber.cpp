@@ -32,7 +32,6 @@ rs2Opened(false)
 Rs2Grabber::~Rs2Grabber(){
     //    stop();
     waitForThread(true);
-    //	waitForThread(true);
 }
 
 /// Start the thread.
@@ -91,10 +90,8 @@ void Rs2Grabber::setupFramefilter(int sgradFieldresolution, float newMaxOffset, 
     maxVariance = 4 ;
     hysteresis = 0.5f ;
     bigChange = 10.0f ;
-//	instableValue = 0.0;
     maxgradfield = 1000;
     initialValue = 4000;
-//    outsideROIValue = 3999;
     minInitFrame = 60;
     
     //Setup ROI
@@ -434,7 +431,7 @@ void Rs2Grabber::updateGradientField()
                 if (gvx !=0 && gvy !=0)
                     gradField[y*gradFieldcols+x]=ofVec2f(gx/gradFieldresolution/gvx, gy/gradFieldresolution/gvy);
                 if (gradField[y*gradFieldcols+x].length() > maxgradfield){
-                    gradField[y*gradFieldcols+x].scale(maxgradfield);// /= gradField[y*gradFieldcols+x].length()*maxgradfield;
+                    gradField[y*gradFieldcols+x].scale(maxgradfield);
                     lgth+=1;
                 }
             } else {
@@ -510,10 +507,6 @@ void Rs2Grabber::applySimpleOutlierInpainting()
 	{
 		for (unsigned int x = max(0, minX-2); x < min((int)width, maxX+2); x++)
 		{
-	//for (unsigned int y = minY; y < maxY; y++)
-	//{
-	//	for (unsigned int x = minX; x < maxX; x++)
-	//	{
 			int idx = y * width + x;
 			float val = data[idx];
 
