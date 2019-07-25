@@ -6,13 +6,14 @@ It was developed with specific aim of simplifying the use of an augmented realit
 
 - run on a mid-range laptop or home computer (Mac OS X High Sierra ver 10.13.6 operation has been confirmed, minimal GPU requirement).
 - openFrameworks of_v0.9.8_osx_release
+- Xcode version 9.3
 - [RealSense SDK](https://github.com/IntelRealSense/librealsense) ver v2.13.0
 - RealSense2 version
   * Intel Real Sense2 435
 
 ## Main Features
 
-Refer to [Magic-sand](https://github.com/thomwolf/Magic-Sand).
+Operates on a computer connected to a home cinema projector and a RealSense2. The software controls the projector to project colors as a function of the sand level measured by the RealSense2 and transforms a sandbox in a colorful playground.
 
 ## Getting started
 
@@ -64,7 +65,7 @@ Refer to [Magic-sand](https://github.com/thomwolf/Magic-Sand).
 
 ### Source Code
 
-This software source code based on [Magic-sand](https://github.com/thomwolf/Magic-Sand). But you are only able to launch this software by connecting realsense2. This software needs to connect RealSense2.
+This software source code based on [Magic-sand](https://github.com/thomwolf/Magic-Sand). But you are only able to launch this software by connecting RealSense2. This software needs to connect RealSense2.
 
 ### Create development environment
 
@@ -213,7 +214,7 @@ The `sampler2DRect` received in the shader is normalized between 0 and 1, a conv
 
 #### Coordinate conversion / elevation functions
 Three coordinate systems can be used:
-- the realsense2 coordinate system of the 2D realsense image : (x, y) in pixel units with origin in the top-left corner,
+- the RealSense2 coordinate system of the 2D realsense image : (x, y) in pixel units with origin in the top-left corner,
 - the world coordinate system: a 3D coordinate system (x, y, z) in millimeters units originating from the realsense sensor with z axis extending from the realsense sensor, x the horizontal axis of the realsense sensor and y the vertical axis, and
 - the projector coordinate system of the 2D projector image : (x, y) in pixel units with origin in the top-left corner.
 
@@ -256,7 +257,7 @@ An automatic calibration comprises:
 - measure the average plane formed by the sand surface to define the base plane (see above),
 - display and find 5 chess boards (60 calibration points) on the sand surface,
 - ask the user to cover the sand with a board,
-- display and find 5 chess boards (60 calibration points) on the board surface,
+- display and find 10 chess boards (60 calibration points) on the board surface,
 - set the detection ceiling to 50 milimeters above the board.
 
 The following functions can be called to change some internal values of `rs2Projector`:
@@ -271,8 +272,7 @@ The following functions give information of the state of the realsense object:
 - `isCalibrated()`: is the `rs2Projector` calibrated (calibration file found or calibration performed)
 - `isImageStabilized()`: is the depth frame stabilized (arbitrary time frame after initialisation)
 - `isBasePlaneUpdated()`: was the base plane updated in the previous call to `update()'
-- `isROIUpdated()`: was the sand region location/extension updated in the previous call to `update()'
-- `isCalibrationUpdated()`: was the calibration updated in the previous call to `update()`
+- `isROIUpdated()`: was the sand region location/extension updated in the previous call to `update()` `isCalibrationUpdated()`: was the calibration updated in the previous call to `update()`
 
 #### RealSense2 projector other getters
 The following functions give additional information :

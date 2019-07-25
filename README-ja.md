@@ -10,14 +10,13 @@ Magic Sand For RealSense2 は [UC Davis](http://idav.ucdavis.edu/~okreyllos/ResD
   - openFrameworks 0.9.8
   - Xcode version 9.3
   - [RealSense SDK](https://github.com/IntelRealSense/librealsense) version 2.13.0
-- ハードウェア
+- RealSense2のバージョン
   - Intel RealSense D435
 
 ## Main Features
 
-プロジェクターとRealSenseをPCに繋げます。  
-プロジェクターのセンシングを行うために、キャリブレーションを行います。  
-キャリブレーション成功後、RealSenseから深度のセンシングを行い、そのキャリブレーションのデータを元にプロジェクターに投影します。
+プロジェクターとRealSenseをPCに繋げます。 
+RealSenseが取得する深度情報に応じて、砂場の色を変化させ、それを投影します。
 
 ## Getting started
 
@@ -70,6 +69,10 @@ Status に Calibration successful と表示されれば、キャリブレーシ�
 キャリブレーションが終了したら **Run** ボタンを押すことでアプリケーションを起動できます。  
 これで、等高線と色付きの地図が砂の上に表示されます。最近のPCでは、フレームレートは60fps近く出るはずです。
 
+### Caution
+アプリケーションを終了した際に、RealSense2がアプリケーションまたは、RealSense Viewer によってロックされたままになることがあります。
+その場合、RealSense2との接続を切断することによって、ロックを解消することができます。
+
 ## Sandbox games
 
 RealSense 対応版では有効化してません。  
@@ -81,6 +84,8 @@ RealSense 対応版では有効化してません。
 
 このソフトウェアのベースとなった Kinect 用のソースコードは以下のリンクにあります。  
 [github.com/thomwolf/Magic-Sand](https://github.com/thomwolf/Magic-Sand)  
+
+このソフトウェアは、RealSense2でしか実行することができません。
 
 ### Create environment
 
@@ -94,6 +99,7 @@ RealSense の SDK は頻繁に変更されています。前述したバージ�
 
 RealSense でこのソフトウェアをデバッグする際に、外部の SDK などが必要になります。以下のコマンドを用いて導入します。
 あらかじめ [Homebrew](https://brew.sh/) がインストールされているものとします。
+
 ```
 # Clone IntelRealSense/librealsense
 git clone https://github.com/IntelRealSense/librealsense.git
@@ -116,8 +122,7 @@ open librealsense2.xcodeproj
 
 #### RealSense用のdylibの導入
 
-- Xcodeで開いたプロジェクトのビルドターゲットを `realsense-viewer` に変更して実行します。
-- 実行できたら、ビルドターゲットを `import` に変更して実行します。
+- ビルドターゲットを `import` に変更して実行します。
 - その後 `/usr/local/lib/librealsense2.2.dylib` が出来ていることを確認します。
 
 #### XcodeへSDKへのパスを追加
@@ -256,12 +261,12 @@ ofVec2f gradientAtRs2Coord(float x, float y);
 - 砂の表面に5つのチェスボードを表示し、認識させます。
 - ユーザに砂の上に板をかぶせるように尋ねます。
 - 砂の表面に10個のチェスボードを表示し、認識させます。
-- 50mm以上の板を検出します。
+- 板の50mm 上の部分を高度限界として検出し、設定します。
 
 `rs2Projector`の以下の関数を呼ぶことによって内部の値を変更することができます:
 - `setGradFieldResolution(int gradFieldResolution)`: 平面の勾配の解像度を変更することができます。
-- `setSpatialFiltering(bool sspatialFiltering)`: 深度を取得しているフレームの空間フィルターをトグルで切り替えることができます。
-- `setFollowBigChanges(bool sfollowBigChanges)`: 検出の大きな変更ををトグルで切り替えることができます。
+- `setSpatialFiltering(bool sspatialFiltering)`: 深度を取得しているフレームの空間的なフィルタリングを切り替えることができます。
+- `setFollowBigChanges(bool sfollowBigChanges)`: "大きな変化"の検出を切り替えます。
 
 #### Rs2 projector state functions
 
