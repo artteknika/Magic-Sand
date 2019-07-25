@@ -2,13 +2,13 @@
 Magic Sand is a software for operating an augmented reality sandbox like the [Augmented Reality Sandbox](https://arsandbox.ucdavis.edu)
 developped by [UC Davis](http://idav.ucdavis.edu/~okreylos/ResDev/SARndbox/).
 
-It was developed woth specific aim of simplifying the use of an augmented reality sandbox for RealSense2 in a home/family environment:
+It was developed with specific aim of simplifying the use of an augmented reality sandbox for RealSense2 in a home/family environment:
 
 - run on a mid-range laptop or home computer (Mac OS X High Sierra ver 10.13.6 operation has been confirmed, minimal GPU requirement).
-- openFrameworks of_v0.9.88_osx_release
+- openFrameworks of_v0.9.8_osx_release
 - [RealSense SDK](https://github.com/IntelRealSense/librealsense) ver v2.13.0
 - RealSense2 version
-  * Intel Real Sense2 435 ()
+  * Intel Real Sense2 435
 
 ## Main Features
 
@@ -25,8 +25,8 @@ Refer to [Magic-sand](https://github.com/thomwolf/Magic-Sand).
 ### Calibration
 
 Basically refer to [Magic-sand](https://github.com/thomwolf/Magic-Sand).
-I changed Application Status GUI, it shows Application Status, RealSense2 Status, Calibration ROI, the status of Calibration.
-RealSense2 requires time buffer for calibration, so I added The Status GUI shows ready for calibration.
+This application was modified Status GUI, it shows Application Status, RealSense2 Status, Calibration ROI and, the status of Calibration.
+RealSense2 requires buffer time for calibration, so this was added The Status GUI shows ready for calibration.
 Please check it before calibration.
 
 #### Debug mode for calibration
@@ -37,10 +37,14 @@ Refer to [Magic-sand](https://github.com/thomwolf/Magic-Sand).
 
 Refer to [Magic-sand](https://github.com/thomwolf/Magic-Sand).
 
+### Caution
+
+If you finish this application, RealSense2 is sometimes left to be locked in this application or RealSense Viewer. Then Disconnect RealSense2.
+
 ## Sandbox games
 
 Refer to [Magic-sand](https://github.com/thomwolf/Magic-Sand).
-But, I disabled this Sandbox games. If you want to unable it, edit source code of this software.
+But, we disabled this Sandbox games. If you want to enable it, edit source code of this software.
 
 ### Shape an Island
 
@@ -58,9 +62,9 @@ Refer to [Magic-sand](https://github.com/thomwolf/Magic-Sand).
 
 Refer to [Magic-sand](https://github.com/thomwolf/Magic-Sand).
 
-### Source Cod
+### Source Code
 
-This software source code based on [Magic-sand](https://github.com/thomwolf/Magic-Sand). But you aren't able to launch this software by connecting realsense2. This software needs to connect RealSense2.
+This software source code based on [Magic-sand](https://github.com/thomwolf/Magic-Sand). But you are only able to launch this software by connecting realsense2. This software needs to connect RealSense2.
 
 ### Create development environment
 
@@ -68,21 +72,23 @@ This software source code based on [Magic-sand](https://github.com/thomwolf/Magi
 
 We need development environment when add functions to this software.
 Please launch this command
+
 ```
 cd ~/oF/of_v0.9.8_osx_release/apps/ # change openFrameworks dir
 git clone this software link # clone this software
 
-brew install ghq # installation ghq package
-ghq get ghq get IntelRealSense/librealsense # clone RealSense2 SDK to ~/.ghq
+git clone https://github.com/IntelRealSense/librealsense.git # clone required RealSense SDK
 
-# get require package
+brew install ghq # installation ghq package
+
+# get required package
 brew install libusb pkg-config
 brew install glfw
 brew install cmake
 
 # setup Build
 cd ~/.ghq/github.com/IntelRealSense/librealsense # move library
-git reset --hard 719b0b9 # change version 2.13.0
+git reset --hard 719b0b9 # Do downgrade version 2.13.0
 mkdir build && cd build # make build dir and move build
 sudo xcode-select --reset # init xcode-select
 cmake .. -DBUILD_EXAMPLES=true -DBUILD_WITH_OPENMP=false -DHWM_OVER_XU=false -G Xcode # cmake librealsense
@@ -90,6 +96,7 @@ cmake .. -DBUILD_EXAMPLES=true -DBUILD_WITH_OPENMP=false -DHWM_OVER_XU=false -G 
 # Open
 open librealsense2.xcodeproj
 ```
+
 #### After opening XCode
 
   - Build target change `All` to `realsense-viewer`, launch SDK.
@@ -147,6 +154,7 @@ This software needs openFrameworks version 0.9.8.
 For instance, a `SandSurfaceRenderer` object can be constructed with a pointer to the `Rs2Projector` shared object. (the `SandSurfaceRenderer` class convert depth information in color using a editable colormap and display these colors on the sand).
 
 A typical `setup()` function of a openframeworks app can thus reads:
+
 ```
 std::shared_ptr<ofAppBaseWindow> projWindow;
 std::shared_ptr<Rs2Projector> rs2Projector;
@@ -160,12 +168,13 @@ void ofApp::setup() {
 	sandSurfaceRenderer->setup(true);
 }
 ```
+
 `setup(true)` indicates that the GUI of the `Rs2Projector` and the `sandSurfaceRenderer` will be displayed.
 
 
 The `rs2Projector` object then needs to be updated in the `update()` function of the openframeworks app (preferably before the objects that use its functions) and drawn in the projector `draw()` function.
 
-The `rs2Projector` object needs full control on the projector window during the calibration process so you should be careful not to draw things on the projector window after the call to `rs2Projector->drawProjectorWindow()` if a calibration is currently performed (you can check `rs2Projector->isCalibrating()`).
+The `rs2Projector` object needs full control on the projector window during the calibration process, so you should be careful not to draw things on the projector window after the call to `rs2Projector->drawProjectorWindow()` if a calibration is currently performed (you can check `rs2Projector->isCalibrating()`).
 
 The following example illustrates the `update()` and `draw()` functions to implement a simple augmented reality sandbox once the `rs2Projector` and `sandSurfaceRenderer` objects have been initiated as detailed above and provided that the projector window has a listener callback setup to the `drawProjWindow(ofEventArgs &args)` function (see `main.cpp`).
 
@@ -199,6 +208,7 @@ void unbind();
 ofMatrix4x4 getTransposedRs2WorldMatrix();
 ofMatrix4x4 getTransposedRs2ProjMatrix();
 ```
+
 The `sampler2DRect` received in the shader is normalized between 0 and 1, a conversion scale thus has to be also sent.
 
 #### Coordinate conversion / elevation functions
@@ -211,6 +221,7 @@ The most straighforward conversion goes from realsense coordinates to world coor
 If you want to animate or display objects, a natural choice would thus be to store then in realsense coordinate and to perform the conversion on display.
 
 The following functions provide conversions between the coordinate systems:
+
 ```
 ofVec2f worldCoordToProjCoord(ofVec3f vin);
 ofVec3f projCoordAndWorldZToWorldCoord(float projX, float projY, float worldZ);
@@ -224,6 +235,7 @@ Another value that can be used is the `elevation` which is the distance from a p
 - a plane equation (`getBasePlaneEq()`).
 
 `elevation` can be converted/accessed by the following functions:
+
 ```
 float elevationAtRs2Coord(float x, float y);
 float elevationToRs2Depth(float elevation, float x, float y);
@@ -319,7 +331,7 @@ Source: [Magic-sand](https://github.com/thomwolf/Magic-Sand)
 ## [1.5.4.1 for RealSense2]() - - -2019
 Supported RealSense2
 ### Bug fixes
-    - a draw depth frame was broken in 1.5.4.1 - it did not show depth frame. Now fixes
+    - a draw depth frame was broken in 1.5.4.1 - it did not show depth frame. Now fixed
 
 ## Changed
     - refer to Point to change
