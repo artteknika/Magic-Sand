@@ -58,6 +58,8 @@ Status ウィンドウのパラメータは以下のようになっています�
 - 板の上にチェスボードが投影され、再度キャリブレーションが行われます。
 
 Status に Calibration successful と表示されれば、キャリブレーションは成功です。
+ready for calibration のStatus が No の時にキャリブレーションを行った場合に、画像の保存のポップアップが出てきます。
+
 
 #### Debug mode for calibration
 

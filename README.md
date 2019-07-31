@@ -27,8 +27,8 @@ Refer to [Magic-sand](https://github.com/thomwolf/Magic-Sand).
 
 Basically refer to [Magic-sand](https://github.com/thomwolf/Magic-Sand).
 This application was modified Status GUI, it shows Application Status, RealSense2 Status, Calibration ROI and, the status of Calibration.
-RealSense2 requires buffer time for calibration, so this was added The Status GUI shows ready for calibration.
-Please check it before calibration.
+RealSense2 requires buffer time for calibration, so we added The Status GUI shows ready for calibration.
+Please check it before calibration, if you calibrate before ready for calibration is No, pop up a screen for saving a image.
 
 #### Debug mode for calibration
 
