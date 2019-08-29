@@ -5,4 +5,4 @@ ofxModal
 ofxOpenCv
 ofxParagraph
 ofxXmlSettings
-ofxrealsense2
+addons/ofxRealSense2
