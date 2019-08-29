@@ -258,5 +258,6 @@ paket-files/
 .idea/
 *.sln.iml
 
-*.xcodeproj/*
-!*.xcodeproj/project.pbxproj
+# Xcode
+## User settings
+xcuserdata/
