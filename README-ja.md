@@ -10,13 +10,13 @@ Magic Sand For RealSense2 は [UC Davis](http://idav.ucdavis.edu/~okreyllos/ResD
   - openFrameworks 0.9.8
   - Xcode version 9.3
   - [RealSense SDK](https://github.com/IntelRealSense/librealsense) version 2.13.0
-- RealSense2のバージョン
+- RealSense
   - Intel RealSense D435
 
 ## Main Features
 
-プロジェクターとRealSenseをPCに繋げます。 
-RealSenseが取得する深度情報に応じて、砂場の色を変化させ、それを投影します。
+家庭用プロジェクターとRealSenseセンサーに接続されたコンピュータ上で動作します。
+このソフトウェアはRealSenseセンサーで測定された砂の高さに応じた色をプロジェクターで投影するするように制御し、砂場をカラフルな遊び場へと変化させます。
 
 ## Getting started
 
@@ -32,7 +32,7 @@ RealSenseが取得する深度情報に応じて、砂場の色を変化させ�
 プロジェクターとRealSenseをPCに繋げて、magic-sandを実行します。
 
 デフォルトでは、ソフトウェアは **setup** モードで起動します。  
-このモードでは、Kinectの深度またはカラーイメージがユーザーインターフェイスに表示され、プロジェクターは白いイメージを投影します。  
+このモードでは、RealSenseの深度またはカラーイメージがユーザーインターフェイスに表示され、プロジェクターは白いイメージを投影します。  
 RealSense とプロジェクターのステータスは、ユーザーインターフェースの左下の Status ウィンドウに表示されます。もしStatusの項目が表示されない場合は、メインウィンドウのサイズを変更すると表示されます。  
 Status ウィンドウのパラメータは以下のようになっています。
 - アプリケーションの状態
@@ -48,32 +48,31 @@ Status ウィンドウのパラメータは以下のようになっています�
 
 ### Calibration
 
-キャリブレーションを行う際にRealSenseとプロジェクターに必要な設定があります。
+キャリブレーションを行う際にRealSenseとプロジェクターにいくつか手順が必要です。
 - 投影する砂箱の中の砂を平坦にします。
-- RealSense から深度のイメージとカラーイメージがとれているかを確認します。 **advanced|Display Rs2 Depth View** で確認します。
+- RealSense から深度イメージとカラーイメージが表示されているかを確認します。 **advanced|Display Rs2 Depth View** で確認します。
 - **Calibration|Manually Draw Sand Region** を押します。
 - カラーイメージもしくは深度イメージのどちらかでキャリブレーションの領域をマウスで矩形を描いて定義します。
-- **Automatically Calibrate Rs2 & Projector** を押して一連のキャリブレーションの流れを行ないます。
+- **Automatically Calibrate Rs2 & Projector** を押します。砂の上にチェスボードが投影され一連のキャリブレーションが行われます。
 - `Please cover the sandbox with a board and press ok.` のメッセージが表示されたら、砂の上から薄い板などで覆い、 ok を押します。
 - 板の上にチェスボードが投影され、再度キャリブレーションが行われます。
 
 Status に Calibration successful と表示されれば、キャリブレーションは成功です。
 ready for calibration のStatus が No の時にキャリブレーションを行った場合に、画像の保存のポップアップが出てきます。
 
-
 #### Debug mode for calibration
 
-キャリブレーションが失敗した場合は、 **data/DebugFiles** フォルダーを参照してください。  
-ここにキャリブレーション時の画像が保存されていて、失敗した要素を見ることができます。**advanced|Dump Debug** を有効化して、再度キャリブレーションを行なってください。
+キャリブレーションが成功しなかった場合は、 デバッグモードを有効にして、**data/DebugFiles** フォルダーを参照してください。  
+ここにはキャリブレーション時の画像が保存されていて、失敗した要素を見ることができます。これを行うには、**advanced|Dump Debug** を有効化して、再度キャリブレーションを実行してください。
 
 ## Starting the Application
 
-キャリブレーションが終了したら **Run** ボタンを押すことでアプリケーションを起動できます。  
+キャリブレーションが成功、または以前にキャリブレーションが成功した場合、スペースキーを押すか、**Run** ボタンを押すことでアプリケーションを開始できます。  
 これで、等高線と色付きの地図が砂の上に表示されます。最近のPCでは、フレームレートは60fps近く出るはずです。
 
 ### Caution
-アプリケーションを終了した際に、RealSense2がアプリケーションまたは、RealSense Viewer によってロックされたままになることがあります。
-その場合、RealSense2との接続を切断することによって、ロックを解消することができます。
+アプリケーションを終了した際に、RealSenseがアプリケーションまたは、RealSense Viewer によってロックされたままになることがあります。
+その場合、RealSenseとの接続を切断することによって、ロックを解消することができます。
 
 ## Sandbox games
 
@@ -87,7 +86,7 @@ RealSense 対応版では有効化してません。
 このソフトウェアのベースとなった Kinect 用のソースコードは以下のリンクにあります。  
 [github.com/thomwolf/Magic-Sand](https://github.com/thomwolf/Magic-Sand)  
 
-このソフトウェアは、RealSense2でしか実行することができません。
+このソフトウェアは、RealSenseでしか実行することができません。
 
 ### Create environment
 
@@ -124,7 +123,7 @@ open librealsense2.xcodeproj
 
 #### RealSense用のdylibの導入
 
-- ビルドターゲットを `import` に変更して実行します。
+- ビルドターゲットを `install` に変更して実行します。
 - その後 `/usr/local/lib/librealsense2.2.dylib` が出来ていることを確認します。
 
 #### XcodeへSDKへのパスを追加
@@ -134,7 +133,7 @@ Xcode の Build Settings の `Other Linker Flags` に `/usr/local/lib/librealsen
 ### Dependencies
 
 このMagic Sand for RealSense は [openframeworks](http://openframeworks.cc/) ver0.9.8 を使用しています。また、Kinect版 [github.com/thomwolf/Magic-Sand](https://github.com/thomwolf/Magic-Sand) がベースとなっています。  
-以下のaddonが必要です。
+以下のアドオンが必要です。
 
 - official addons (included in openframeworks 0.9.8)
   * ofxOpenCv
@@ -149,26 +148,27 @@ Xcode の Build Settings の `Other Linker Flags` に `/usr/local/lib/librealsen
 
 ### Quick start for editing the source code
 - [openframeworks](http://openframeworks.cc/download/) から0.9.8版のopenFrameworksをダウンロードします。
-- ダウンロードしたopenFrameworksの中に **app/myApps** で自分用のディレクトリを作成します。
-- インストールしたaddonをopenFrameworks内の **addons** に移動させます。
-- 以下のIDEでプロジェクトを開きます. (Xcode / VS2015 project files are supplied, should work also on linux)
+- ダウンロードしたopenFrameworksの **app/myApps** フォルダーでMagic-Sandを展開します。
+- アドオンをopenFrameworks内の **addons** フォルダーに移動します。
+- IDEでプロジェクトを開きます。(Xcode / VS2015 project files are supplied, should work also on linux)
 
-また [openframeworks](http://openframeworks.cc/) のドキュメントやフォーラムを見ながらコードの編集を行うとよいです。充実した内容です。
+まだ不明な場合は [openframeworks](http://openframeworks.cc/) のドキュメントやフォーラムを確認してください。すばらしいコミュニティです！
 
 ### How it can be used
-このコードは簡単にゲームアプリケーションなどを追加、拡張できるように設計されています。
+このコードは簡単に拡張できるように設計されており、これをベースに追加したいゲーム、アプリケーションを開発できます。
 
-以下にスクリプトの一部を載せていきます。
+以下の説明の一部は少し古いことに注意してください。
 
-`Rs2Projector` クラスはRealSenseセンサーとのやりとりを行うスクリプトで、キャリブレーションやRealSense、実際の空間、プロジェクターの変換や連動をおこなうシステムです。
+`Rs2Projector`クラスは、RealSenseセンサーとの通信、キャリブレーション、RealSense(2D)座標系・ワールド(3D)座標系・プロジェクター(2D)座標系間の変換を処理します。
 
-`Rs2Projector`オブジェクトは`setup()`のなかでshared_ptrとして作られています。そのオブジェクトはプロジェクターが投影しているウィンドウのポインタを必要とします(`main.cpp`では二つのウィンドウが設定されていて、そこでプロジェクターのポインタを取得しています)。
+openFrameworksの`setup()`関数内で`R2Projector`オブジェクトを`shared_ptr`として作成できます。このオブジェクトはプロジェクターウィンドウへのポインタが必要です。(openFrameworksで2つのウィンドウを適切に設定し、プロジェクターウィンドウへのポインタを取得する方法については、`main.cpp`を参照してください)。
 
-`Rs2Projector`オブジェクトは深度を取得するためや、変換関数を参照するために複数のオブジェクトの変数を共有しています(マルチスレッドの検証はしていません)。
+`Rs2Projector`オブジェクトは深度を取得するためや、変換関数を参照するためにさまざまなオブジェクト間で共有できます(マルチスレッドの検証はしていません)。
 
-`SandSurfaceRenderer`のオブジェクトは`Rs2Projector`のポインタを使って構成されるものです(`SandSurfaceRenderer`クラスは深度のデータを砂へ投影するカラーマップへと変換を行います)。
+例えば、`SandSurfaceRenderer`オブジェクトは`Rs2Projector`共有オブジェクトへのポインタを使って生成されます。(`SandSurfaceRenderer`クラスは編集可能なカラーマップを使用して深度情報を色情報へ変換し、砂の上へ表示します)。
 
-openFrameworksの `setup()` 関数は以下のようになります:
+openFrameworksの `setup()` 関数は以下のようになります。
+
 ```
 std::shared_ptr<ofAppBaseWindow> projWindow;
 std::shared_ptr<Rs2Projector> rs2Projector;
@@ -182,13 +182,16 @@ void ofApp::setup() {
 	sandSurfaceRenderer->setup(true);
 }
 ```
+
 `setup(true)` が呼ばれると `rs2Projector` と `sandSurfaceRenderer` のGUIが表示されることを示しています。
 
-`rs2Projector` オブジェクトはopenFrameworksの標準関数である `update()` で更新をすることが必要になります。その後 `draw()`でプロジェクターに描画します。
+その後、`rs2Projector`オブジェクトはopenFrameworksの関数である`update()`内で更新され(オブジェクトの関数を使用する前が望ましい)、プロジェクターの`draw()`関数内で描画される必要があります。
 
-`rs2Projector` オブジェクトは `rs2Projector->drawProjectorWindow()`を呼び出し後に、キャリブレーション時にプロジェクターが投影しているウィンドウを占有してしまうため、プロジェクターウィンドウには何も描画しないように注意してください。現在キャリブレーションが行われているならば、その状態を`rs2Projector->isCalibrating()`で確認できます。
+`rs2Projector`オブジェクトはキャリプレーション中にプロジェクターウィンドウを占有する必要があるため、`rs2Projector->drawProjectorWindow()`を呼び出した後は、キャリプレーション実行中はプロジェクターウィンドウには何も描画しないように注意してください。(現在キャリブレーションが行われているかは`rs2Projector->isCalibrating()`で確認できます)
 
-`update()` や `draw()` がシンプルなサンドボックスの実装をしてくれています。 `rs2Projector` と `sandSurfaceRenderer` オブジェクトはプロジェクターウィンドウが`drawProjWindow(ofEventArgs &args)`をコールバックで読んだ際に、内部は初期化されています(`main.cpp`を参照してください)。
+上記のように`rs2Projector`と`sandSurfaceRenderer`が初期化され、
+プロジェクターウィンドウのリスナーコールバックに`drawProjWindow(ofEventArgs &args)`関数を登録した場合(`main.cpp`を参照)、
+シンプルなARサンドボックスの実装は、次の`update()`と`draw()`関数のようになります。
 
 ```
 void ofApp::update(){
@@ -205,12 +208,12 @@ void ofApp::drawProjWindow(ofEventArgs &args){
 }
 ```
 
-### rs2Projector Functions
+### Rs2Projector Functions
 
 #### Shader functions
-`sandSurfaceRenderer` クラスは色が計算されたシェーダーを表示します。
+`sandSurfaceRenderer`クラスでは色の計算に使用可能なシェーダーとユニフォーム変数の設定方法の例を示しています。
 
-`Rs2Projector` は4x4の行列のユニフォームを設定してます。
+以下の`Rs2Projector`の関数は、ユニフォーム変数を準備するために特に重要です。
 
 ```
 void bind();
@@ -218,18 +221,19 @@ void unbind();
 ofMatrix4x4 getTransposedRs2WorldMatrix();
 ofMatrix4x4 getTransposedRs2ProjMatrix();
 ```
-`sampler2DRect` はバイナリ化されたシェーダーを受け取り、結果としてそれを変換したあとのデータを送ります。
+
+シェーダーで受け取った`sampler2DRect`は0から1に正規化されているため、変換スケールも送信する必要があります。
 
 #### Coordinate conversion / elevation functions
-3つの連動させるシステムは以下のように使用されています:
-- RealSense 2Dイメージに関する連動システム : ピクセル内の(x,y)座標の原点を左上端に変換する処理をおこなっています。
-- 現実空間と連動するシステム : xyz座標のRealSenseから取得される㎜単位の座標値を座標データのxyz軸データを拡張しています。
-- プロジェクターの連動システム : xy座標のピクセルデータを左上端を原点に変換する処理を行なっています。
+次の3つの座標系を使用できます。
+- 2次元RealSense画像のRealSense座標系 : 左上隅を原点とするピクセル単位の座標(x, y)。
+- ワールド座標系 : RealSenseセンサーから伸びたz軸のある、RealSenseセンサーを起点としたミリメートル単位の3D座標系(x, y, z)で、xがRealSenseセンサーの水平軸、yが垂直軸。
+- 2次元プロジェクター画像のプロジェクター座標系 : 原点が左上隅のピクセル単位の座標(x, y)。
 
-もっとも簡単なrealsense2から取得する座標をワールド座標とプロジェクターの座標に変換し連動するものです。
-もし、アニメーションをするオブジェクトを表示したいならば、普通はこのようにrealsense2の連動された値を格納し、表示の変換を行います。
+最もわかりやすい変換は、RealSense座標系からワールド座標系とプロジェクター座標系への変換です。
+もしオブジェクトをアニメーションしたり表示したいなら、通常であればRealSense座標を保存し表示上で変換します。
 
-以下の関数が連携システムの変換を行うものです:
+以下の関数が座標系間の変換を提供しています。
 
 ```
 ofVec2f worldCoordToProjCoord(ofVec3f vin);
@@ -239,9 +243,10 @@ ofVec3f rs2CoordToWorldCoord(float x, float y);
 ofVec2f worldCoordTors2Coord(ofVec3f wc);
 ```
 
-`elevation` は、三次元空間でどれくらい離れているかを連動しているものです:
-- (`getBasePlaneNormal()`) は面法線を取得し、(`getBasePlaneOffset()`) は平面の補正値を返します。
-- (`getBasePlaneEq()`) は平面方程式です。
+使用可能なもう1つの値は`elevation`(標高)です。これはワールド座標上の点から次のように定義される3次元ベース平面までの距離です。
+
+- 法線 (`getBasePlaneNormal()`)とオフセット (`getBasePlaneOffset()`)
+- 平面方程式(`getBasePlaneEq()`).
 
 `elevation` は以下の関数で変換/取得をすることができます。
 ```
@@ -249,44 +254,45 @@ float elevationAtRs2Coord(float x, float y);
 float elevationToRs2Depth(float elevation, float x, float y);
 ```
 
-`Rs2Projector` もまた、realsenseから取得する深度の勾配の値をワールド座標値を連動するものに格納することができ、解像度を用いて計算を行うことができます。  
-x,yで指定する座標の勾配を取得するのは以下の関数で可能です。
+`Rs2Projector`は、指定された解像度(デフォルトは10ピクセル)でRealSense深度の勾配行列をワールド座標系で格納します。
+指定の位置の勾配は次の方法で取得可能です。
+
 ```
 ofVec2f gradientAtRs2Coord(float x, float y);
 ```
 
 #### Setup & calibration functions
-`startFullCalibration()` プロジェクターとrealsenseの自動のキャリブレーションを行う関数です。
-自動キャリブレーションの処理構造は以下のようになります:
-- キャリブレーションを行うユーザに対して砂が平坦かを確認します。
-- 基準平面を定義するために、平均平面を砂の表面から形作ります。
-- 砂の表面に5つのチェスボードを表示し、認識させます。
-- ユーザに砂の上に板をかぶせるように尋ねます。
-- 砂の表面に10個のチェスボードを表示し、認識させます。
-- 板の50mm 上の部分を高度限界として検出し、設定します。
+`startFullCalibration()`は、プロジェクターとrealsenseの自動キャリブレーションを行います。
+自動キャリブレーションの処理は以下で構成されます。
+- ユーザに砂を平らにするように求める。
+- 基準平面を定義するために、平均平面を砂の表面から測定する(下記参照)。
+- 砂の表面に5つのチェスボード(60のキャリブレーションポイント)を表示し、認識させる。
+- ユーザに砂の上に板をかぶせるように求める。
+- 砂の表面に10個のチェスボード(60のキャリブレーションポイント)を表示し、認識させる。
+- 板の50mm上が検出上限に設定される。
 
-`rs2Projector`の以下の関数を呼ぶことによって内部の値を変更することができます:
-- `setGradFieldResolution(int gradFieldResolution)`: 平面の勾配の解像度を変更することができます。
-- `setSpatialFiltering(bool sspatialFiltering)`: 深度を取得しているフレームの空間的なフィルタリングを切り替えることができます。
-- `setFollowBigChanges(bool sfollowBigChanges)`: "大きな変化"の検出を切り替えます。
+以下の関数と呼ぶことで、`rs2Projector`の内部値を変更することができます。
+- `setGradFieldResolution(int gradFieldResolution)`: 勾配場の解像度を変更。
+- `setSpatialFiltering(bool sspatialFiltering)`: 深度フレームの空間フィルタリングを切り替え。
+- `setFollowBigChanges(bool sfollowBigChanges)`: "大きな変化"の検出を切り替え(ユーザの手に追従)。
 
 #### Rs2 projector state functions
 
-`rs2projector` オブジェクトの状態の情報を以下の関数によって表示することができます:
-- `isCalibrating()`: `rs2tProjector` 現在のキャリブレーションの状態を取得します。
-- `isCalibrated()`: `rs2Projector` キャリブレーションをされているかを取得します。
-- `isImageStabilized()`: 深度を取得しているフレームが安定しているかを取得します。この値によってキャリブレーションの準備ができているかを取得します。
-- `isBasePlaneUpdated()`: `update()`を呼ぶ前に基準平面の更新をしているかを取得します。
-- `isROIUpdated()`: `update()` を呼ぶ前に砂のROIを更新されているかを取得します。
-- `isCalibrationUpdated()`:  `update()` を呼ぶ前にキャリブレーションの状態を更新されているかを取得します。
+以下の関数は`rs2Projector`オブジェクトの状態の情報を提供します。
+- `isCalibrating()`: `rs2Projector`が現在キャリブレーションを実行しているかを取得します。
+- `isCalibrated()`: `rs2Projector`がキャリブレーションをされているかを取得します。(キャリブレーションファイルが見つかったか、またはキャリブレーションが実行されたか)
+- `isImageStabilized()`: 深度フレームが安定しているかを取得します(初期化後の任意の時間フレーム)。この値によってキャリブレーションの準備ができているかを判断できます。
+- `isBasePlaneUpdated()`: 前回の`update()`呼び出しで基準平面が更新をされているかを取得します。
+- `isROIUpdated()`: 前回の`update()`呼び出しでROIが更新をされているかを取得します。
+- `isCalibrationUpdated()`: 前回の`update()`呼び出しでキャリブレーションの状態が更新をされているかを取得します。
 
 #### Rs2 projector other getters
-追加の`rs2Projector`の追加の情報を以下の関数によって取得することができます:
-- `getRs2ROI()`: 砂のROIを取得することができます。
-- `getRs2Res()`: realsense2の解像度を取得することができます。
-- `getBasePlaneNormal()` : 上記を参照してください。
-- `getBasePlaneOffset()` : 上記を参照してください。
-- `getBasePlaneEq()` : 上記を参照してください。
+以下の関数は`rs2Projector`の追加情報を提供します。
+- `getRs2ROI()`: 砂のROIを取得します。
+- `getRs2Res()`: RealSenseの解像度を取得します。
+- `getBasePlaneNormal()` : 上記を参照。
+- `getBasePlaneOffset()` : 上記を参照。
+- `getBasePlaneEq()` : 上記を参照。
 
 ## points to change
 
@@ -319,12 +325,11 @@ ofVec2f gradientAtRs2Coord(float x, float y);
 
 # Changelog
 ## [1.5.4.1 for RealSense2]() - - -2019
-Supported RealSense2
+Supported RealSense SDK 2
 
-## Changed
+### Changed
 - refer to Point to change
-- We can run this software of RealSense2
-
+- We can run this software of RealSense
 
 ## [1.5.4.1](https://github.com/thomwolf/Magic-Sand/releases/tag/v1.5.4.1) - 10-10-2017
 Bug fix release
