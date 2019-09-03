@@ -2,49 +2,68 @@
 Magic Sand is a software for operating an augmented reality sandbox like the [Augmented Reality Sandbox](https://arsandbox.ucdavis.edu)
 developped by [UC Davis](http://idav.ucdavis.edu/~okreylos/ResDev/SARndbox/).
 
-It was developed with specific aim of simplifying the use of an augmented reality sandbox for RealSense2 in a home/family environment:
+It was developed with specific aim of simplifying the use of an augmented reality sandbox for RealSense in a home/family environment:
 
-- run on a mid-range laptop or home computer (Mac OS X High Sierra ver 10.13.6 operation has been confirmed, minimal GPU requirement).
-- openFrameworks of_v0.9.8_osx_release
+- run on a mid-range laptop or home computer (macOS High Sierra 10.13 operation has been confirmed, minimal GPU requirement).
+- openFrameworks 0.9.8
 - Xcode version 9.3
-- [RealSense SDK](https://github.com/IntelRealSense/librealsense) ver v2.13.0
-- RealSense2 version
-  * Intel Real Sense2 435
+- [RealSense SDK](https://github.com/IntelRealSense/librealsense) version v2.13.0
+- RealSense
+  - Intel RealSense D435
 
 ## Main Features
 
-Operates on a computer connected to a home cinema projector and a RealSense2. The software controls the projector to project colors as a function of the sand level measured by the RealSense2 and transforms a sandbox in a colorful playground.
+Operates on a computer connected to a home cinema projector and a RealSense sensor.
+The software controls the projector to project colors as a function of the sand level measured by the RealSense sensor and transforms a sandbox in a colorful playground.
 
 ## Getting started
 
-Refer to [Magic-sand](https://github.com/thomwolf/Magic-Sand).
+The easiest way to get started is to build the physical setup provided in the guide found at the [tutorial page](https://imgur.com/gallery/Q86wR) and/or check the [reddit thread](https://www.reddit.com/r/DIY/comments/4v1gfi/a_magic_sandbox_i_made_for_my_3_yo_sons_birthday/)
+
+Secondly, download and install/unpack the latest ready-to-use version of the software at the [release page](https://github.com/thomwolf/Magic-Sand/releases/latest). Follow the instructions on the release page to download and install the necessary drivers.
 
 ### Setting up the system
 
-Refer to [Magic-sand](https://github.com/thomwolf/Magic-Sand).
+Connect and turn on the projector and the RealSense and start the software.
+
+By default the software starts in a **setup** mode where the depth or color image from the RealSense can be seen in the user interface and the projector projects a completely white image. This way it is easy to check if the RealSense is running and if the projector is working. The status of the RealSense and the projector can be seen in the status window to the lower left in the user interface.
+
+In **setup** mode the physical positions of the RealSense and projector can be optimised. 
 
 ### Calibration
 
-Basically refer to [Magic-sand](https://github.com/thomwolf/Magic-Sand).
-This application was modified Status GUI, it shows Application Status, RealSense2 Status, Calibration ROI and, the status of Calibration.
-RealSense2 requires buffer time for calibration, so we added The Status GUI shows ready for calibration.
+To calibrate the system so the RealSense and the projector is in correspondence a few steps are needed:
+- Flatten the sand in the sand box.
+- Make sure that you see either the depth image or the color image from the RealSense (click **advanced|Display Rs2 Depth View**)
+- Press **Calibration|Manually Draw Sand Region** 
+- Define the sand region by drawing a rectangle with the mouse on the RealSense Depth or Color view
+- Press **Automatically Calibrate Rs2 & Projector** - a series of Chessboard patterns are now projected  on the sand.
+- When a prompt appears cover the sand box with a light piece of cardboard or similar
+- Press ok -  a series of Chessboard patterns are now projected on the cardboard/plate.
+
+If the calibration is succesful the status window should be updated showing that all is ok.
+
+This application was modified Status GUI, it shows Application Status, RealSense Status, Calibration ROI and, the status of Calibration.
+RealSense requires buffer time for calibration, so we added The Status GUI shows ready for calibration.
 Please check it before calibration, if you calibrate before ready for calibration is No, pop up a screen for saving a image.
 
 #### Debug mode for calibration
 
-Refer to [Magic-sand](https://github.com/thomwolf/Magic-Sand).
+If the calibration was not succesful a debug mode can be enabled that will place debug files in the **data\DebugFiles** folder. These might point you in the direction of why the calibration failed. Do this by enabling **advanced|Dump Debug** and run the calibration routine again.
 
 ## Starting the Application
 
-Refer to [Magic-sand](https://github.com/thomwolf/Magic-Sand).
+If the calibration was succesful or if a calibration was done before, the application can be started by pressing space or pushing the **Run** button.
+
+Now a colored map with iso-lines should appear on the sand. The framerate should be close to 60 FPS for modern PCs.
 
 ### Caution
 
-If you finish this application, RealSense2 is sometimes left to be locked in this application or RealSense Viewer. Then Disconnect RealSense2.
+If you finish this application, RealSense is sometimes left to be locked in this application or RealSense Viewer. Then Disconnect RealSense.
 
 ## Sandbox games
 
-Refer to [Magic-sand](https://github.com/thomwolf/Magic-Sand).
+There are a few games included in Magic-Sand.
 But, we disabled this Sandbox games. If you want to enable it, edit source code of this software.
 
 ### Shape an Island
@@ -61,11 +80,9 @@ Refer to [Magic-sand](https://github.com/thomwolf/Magic-Sand).
 
 ## Coding and Extending Magic Sand
 
-Refer to [Magic-sand](https://github.com/thomwolf/Magic-Sand).
-
 ### Source Code
 
-This software source code based on [Magic-sand](https://github.com/thomwolf/Magic-Sand). But you are only able to launch this software by connecting RealSense2. This software needs to connect RealSense2.
+This software source code based on [Magic-sand](https://github.com/thomwolf/Magic-Sand). But you are only able to launch this software by connecting RealSense. This software needs to connect RealSense.
 
 ### Create development environment
 
@@ -75,20 +92,16 @@ We need development environment when add functions to this software.
 Please launch this command
 
 ```
-cd ~/oF/of_v0.9.8_osx_release/apps/ # change openFrameworks dir
-git clone this software link # clone this software
+# Clone IntelRealSense/librealsense
+git clone https://github.com/IntelRealSense/librealsense.git
 
-git clone https://github.com/IntelRealSense/librealsense.git # clone required RealSense SDK
-
-brew install ghq # installation ghq package
-
-# get required package
+# Get needs package
 brew install libusb pkg-config
 brew install glfw
 brew install cmake
 
-# setup Build
-cd ~/.ghq/github.com/IntelRealSense/librealsense # move library
+# Setup build
+cd ./librealsense # move library
 git reset --hard 719b0b9 # Do downgrade version 2.13.0
 mkdir build && cd build # make build dir and move build
 sudo xcode-select --reset # init xcode-select
@@ -99,26 +112,17 @@ open librealsense2.xcodeproj
 ```
 
 #### After opening XCode
-
-  - Build target change `All` to `realsense-viewer`, launch SDK.
-
-  - if it build successful, build target change `import`, launch SDK.
-
+  - if it build successful, build target change `install`, launch SDK.
   - After build successful, Check `/usr/local/lib/librealsense2.2.dylib`
 
 #### SDK path for Magic-Sand
-
   - open cloned magic-sand project by Xcode.
-
   - After opening magic-sand, select project build setting.
-
   - Search `OTHER LINKER FLAGS`
-
-  - Add RealSense2 dylib path `/usr/local/lib/librealsense2.2.dylib` to `OTHER LINKER FLAGS` path list
+  - Add RealSense dylib path `/usr/local/lib/librealsense2.2.dylib` to `OTHER LINKER FLAGS` path list
 
 ### Dependencies
-Refer to [Magic-sand](https://github.com/thomwolf/Magic-Sand).
-this software needs ofxRealSense2.
+Magic Sand for RealSense2 is based on [openframeworks](http://openframeworks.cc/) release 0.9.8 and makes use of the following addons:
 - official addons (included in openframeworks 0.9.8)
   * ofxOpenCv
   * ofxKinect (using USB lib)
@@ -131,26 +135,22 @@ this software needs ofxRealSense2.
   * [ofxRealSense2]()
 
 ### Quick start for editing the source code
-Basically Refer to [Magic-sand](https://github.com/thomwolf/Magic-Sand).
-This software needs openFrameworks version 0.9.8.
-
-### Point to change
-
-    Note Changed scripts
-
-      * `KinectProjector` -> `Rs2Projector`
-      * `KinectGrabber` -> `Rs2Grabber`
-      * `KinectProjectorCalibration` -> `Rs2ProjectorCalibration`
-      * `SandSurfaceRenderer`
+- Grab a copy of [openframeworks](http://openframeworks.cc/download/) for your OS. (This software needs openFrameworks version 0.9.8.)
+- Unpack the Magic-Sand in the **app/myApps** folder in the openframeworks directory tree
+- Grab the additionnal community addons listed above. They should be installed in the **addons** subdirectory of openframeworks
+- If you are a windows user, install the kinect drivers as detailed on the [release page](https://github.com/thomwolf/Magic-Sand/releases/latest)
+- Enjoy ! (Xcode / VS2015 project files are supplied, should work also on linux)
 
 ### How it can be used
+The code was designed trying to be easily extendable so that additional games/apps can be developed on its basis.
 
+Note that some of the below descriptions are slightly out-of-date.
 
-`Rs2Projector` class handles the communication with the realsense2 sensor, the calibration and the coordinates conversions between realsense2 (2D), world (3D) and projector (2D) coordinate systems.
+The `Rs2Projector` class handles the communication with the RealSense sensor, the calibration and the coordinates conversions between RealSense (2D), world (3D) and projector (2D) coordinate systems.
 
-`Rs2Projector` object as a `shared_ptr` in the `setup()` function of your openframeworks app. It requires a pointer to the projector window (see provided `main.cpp` on how to properly setup two windows in openframeworks and get a pointer to the projector window).
+You can create a `Rs2Projector` object as a `shared_ptr` in the `setup()` function of your openframeworks app. It requires a pointer to the projector window (see provided `main.cpp` on how to properly setup two windows in openframeworks and get a pointer to the projector window).
 
-`Rs2Projector` object can be shared among the various objects that need access to depth and conversions functions (not multi-thread proof of course).
+The `Rs2Projector` object can be shared among the various objects that need access to depth and conversions functions (not multi-thread proof of course).
 
 For instance, a `SandSurfaceRenderer` object can be constructed with a pointer to the `Rs2Projector` shared object. (the `SandSurfaceRenderer` class convert depth information in color using a editable colormap and display these colors on the sand).
 
@@ -171,7 +171,6 @@ void ofApp::setup() {
 ```
 
 `setup(true)` indicates that the GUI of the `Rs2Projector` and the `sandSurfaceRenderer` will be displayed.
-
 
 The `rs2Projector` object then needs to be updated in the `update()` function of the openframeworks app (preferably before the objects that use its functions) and drawn in the projector `draw()` function.
 
@@ -194,9 +193,7 @@ void ofApp::drawProjWindow(ofEventArgs &args){
 }
 ```
 
-Source: [Magic-sand](https://github.com/thomwolf/Magic-Sand)
-
-### realsense2Projector Functions
+### Rs2Projector Functions
 
 #### Shader functions
 The `sandSurfaceRenderer` class shows example of shaders that can be used to compute color and how to set uniforms.
@@ -214,7 +211,7 @@ The `sampler2DRect` received in the shader is normalized between 0 and 1, a conv
 
 #### Coordinate conversion / elevation functions
 Three coordinate systems can be used:
-- the RealSense2 coordinate system of the 2D realsense image : (x, y) in pixel units with origin in the top-left corner,
+- the RealSense coordinate system of the 2D realsense image : (x, y) in pixel units with origin in the top-left corner,
 - the world coordinate system: a 3D coordinate system (x, y, z) in millimeters units originating from the realsense sensor with z axis extending from the realsense sensor, x the horizontal axis of the realsense sensor and y the vertical axis, and
 - the projector coordinate system of the 2D projector image : (x, y) in pixel units with origin in the top-left corner.
 
@@ -248,8 +245,6 @@ The gradient at a given location can be accessed by:
 ofVec2f gradientAtRs2Coord(float x, float y);
 ```
 
-Source: [Magic-sand](https://github.com/thomwolf/Magic-Sand)
-
 #### Setup & calibration functions
 `startFullCalibration()` perfoms an automatic calibration of the realsense and the projector.
 An automatic calibration comprises:
@@ -259,7 +254,7 @@ An automatic calibration comprises:
 - ask the user to cover the sand with a board,
 - display and find 10 chess boards (60 calibration points) on the board surface,
 - set the detection ceiling to 50 milimeters above the board.
-
+ 
 The following functions can be called to change some internal values of `rs2Projector`:
 - `setGradFieldResolution(int gradFieldResolution)`: change the resolution of the gradient field
 - `setSpatialFiltering(bool sspatialFiltering)`: toggle the spatial filtering of the depth frame
@@ -272,7 +267,8 @@ The following functions give information of the state of the realsense object:
 - `isCalibrated()`: is the `rs2Projector` calibrated (calibration file found or calibration performed)
 - `isImageStabilized()`: is the depth frame stabilized (arbitrary time frame after initialisation)
 - `isBasePlaneUpdated()`: was the base plane updated in the previous call to `update()'
-- `isROIUpdated()`: was the sand region location/extension updated in the previous call to `update()` `isCalibrationUpdated()`: was the calibration updated in the previous call to `update()`
+- `isROIUpdated()`: was the sand region location/extension updated in the previous call to `update()`
+- `isCalibrationUpdated()`: was the calibration updated in the previous call to `update()`
 
 #### RealSense2 projector other getters
 The following functions give additional information :
@@ -291,8 +287,6 @@ Magic Sand uses the build-in registration feature of the realsense to perform an
 It is thus probably less acurate than SARndbox.
 
 Magic Sand does not provide dynamic rain features (typically require a stronger GPU than the graphic card provided on a laptop).
-
-Source: [Magic-sand](https://github.com/thomwolf/Magic-Sand)
 
 ## points to change
 
@@ -326,48 +320,49 @@ Source: [Magic-sand](https://github.com/thomwolf/Magic-Sand)
         - `SandSurfaceRenderer.h` 
         - `ColorMap.h`
         - `ColorMap.cpp`
+
 # Changelog
 
 ## [1.5.4.1 for RealSense2]() - - -2019
-Supported RealSense2
+Supported RealSense
 ### Bug fixes
-    - a draw depth frame was broken in 1.5.4.1 - it did not show depth frame. Now fixed
+- a draw depth frame was broken in 1.5.4.1 - it did not show depth frame. Now fixed
 
 ## Changed
-    - refer to Point to change
-    - We can run this software of RealSense2
+- refer to Point to change
+- We can run this software of RealSense
 
 ## [1.5.4.1](https://github.com/thomwolf/Magic-Sand/releases/tag/v1.5.4.1) - 10-10-2017
 Bug fix release
 
 ### Bug fixes
-    - The calibration procedure was broken in 1.5.4 - it did not show the checkerboard. Now fixed.
+- The calibration procedure was broken in 1.5.4 - it did not show the checkerboard. Now fixed.
 
 ### Added
-    - Linux make files (experimental)
+- Linux make files (experimental)
 
 ## [1.5.4](https://github.com/thomwolf/Magic-Sand/releases/tag/v1.5.4) - 23-09-2017
 
 Minor release of Magic-Sand-with-Games
 
 ### Added
-    - Kinect FPS counter for received frames
-    - XCode build files
-    - Full frame filter option
-    - Simple InPainting option for removing outliers in the depth map
-    - Better scaling of GUI
-    - Debug feature: Kinect ROI can be seen on projector
-    - Debug feature: Left mouse click in Kinect depth view will print depth coordinates on console
-    - ChangeLog to the README
+- Kinect FPS counter for received frames
+- XCode build files
+- Full frame filter option
+- Simple InPainting option for removing outliers in the depth map
+- Better scaling of GUI
+- Debug feature: Kinect ROI can be seen on projector
+- Debug feature: Left mouse click in Kinect depth view will print depth coordinates on console
+- ChangeLog to the README
 
 ### Changed
-    - Animals in animal game is now flipped depending on Kinect-projector matrix - so hopefully no more backwards swimming
-    - GUI update for animal game. Now updates animal numbers
-    - Adjusted game constants for animal game.
-    - Added beginner/novice/normal/expert game mode. Press 1, 2, 3 or 4 to start the different modes.
+- Animals in animal game is now flipped depending on Kinect-projector matrix - so hopefully no more backwards swimming
+- GUI update for animal game. Now updates animal numbers
+- Adjusted game constants for animal game.
+- Added beginner/novice/normal/expert game mode. Press 1, 2, 3 or 4 to start the different modes.
 
 ### Bug fixes
-    - Spatial filter now correctly filters the ROI
+- Spatial filter now correctly filters the ROI
 
 ## [1.5.0](https://github.com/thomwolf/Magic-Sand/tree/v1.5) - 08-08-2017
-        Initial release of Magic-Sand with Games
+Initial release of Magic-Sand with Games
