@@ -132,7 +132,8 @@ Magic Sand for RealSense2 is based on [openframeworks](http://openframeworks.cc/
   * [ofxParagraph](https://github.com/braitsch/ofxParagraph)
   * [ofxDatGui (forked version)](https://github.com/thomwolf/ofxDatGui)
   * [ofxModal](https://github.com/braitsch/ofxModal)
-  * [ofxRealSense2]()
+- local addons:
+  * ofxRealSense2 (included in this project)
 
 ### Quick start for editing the source code
 - Grab a copy of [openframeworks](http://openframeworks.cc/download/) for your OS. (This software needs openFrameworks version 0.9.8.)

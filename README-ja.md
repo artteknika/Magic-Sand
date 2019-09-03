@@ -144,12 +144,13 @@ Xcode の Build Settings の `Other Linker Flags` に `/usr/local/lib/librealsen
   * [ofxParagraph](https://github.com/braitsch/ofxParagraph)
   * [ofxDatGui (forked version)](https://github.com/thomwolf/ofxDatGui)
   * [ofxModal](https://github.com/braitsch/ofxModal)
-  * [ofxRealSense2]()
+- local addons:
+  * ofxRealSense2 (included in this project)
 
 ### Quick start for editing the source code
 - [openframeworks](http://openframeworks.cc/download/) から0.9.8版のopenFrameworksをダウンロードします。
 - ダウンロードしたopenFrameworksの **app/myApps** フォルダーでMagic-Sandを展開します。
-- アドオンをopenFrameworks内の **addons** フォルダーに移動します。
+- コミュニティーアドオンをopenFrameworks内の **addons** フォルダーに移動します。
 - IDEでプロジェクトを開きます。(Xcode / VS2015 project files are supplied, should work also on linux)
 
 まだ不明な場合は [openframeworks](http://openframeworks.cc/) のドキュメントやフォーラムを確認してください。すばらしいコミュニティです！
