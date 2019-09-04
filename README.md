@@ -1,6 +1,8 @@
-# Magic Sand For RealSense2
-Magic Sand is a software for operating an augmented reality sandbox like the [Augmented Reality Sandbox](https://arsandbox.ucdavis.edu)
+# Magic Sand for RealSense
+Magic Sand for RealSense is a software for operating an augmented reality sandbox like the [Augmented Reality Sandbox](https://arsandbox.ucdavis.edu)
 developped by [UC Davis](http://idav.ucdavis.edu/~okreylos/ResDev/SARndbox/).
+
+This project is based on [Magic-Sand](https://github.com/thomwolf/Magic-Sand), and instead of Kinect, [Intel RealSense D435](https://www.intelrealsense.com/depth-camera-d435/) is made to operate as a sensing device.
 
 It was developed with specific aim of simplifying the use of an augmented reality sandbox for RealSense in a home/family environment:
 

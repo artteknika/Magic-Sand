@@ -1,6 +1,6 @@
-# Magic Sand For RealSense2
+# Magic Sand for RealSense
 
-Magic Sand For RealSense2 は [UC Davis](http://idav.ucdavis.edu/~okreyllos/ResDev/SARndbox/) によって開発された[Augmented Reality Sandbox](https://arsandbox.ucdavis.edu) のような拡張現実の砂箱を操作するソフトウェアです。
+Magic Sand for RealSense は [UC Davis](http://idav.ucdavis.edu/~okreyllos/ResDev/SARndbox/) によって開発された[Augmented Reality Sandbox](https://arsandbox.ucdavis.edu) のような拡張現実の砂箱を操作するソフトウェアです。
 
 このプロジェクトは [Magic-Sand](https://github.com/thomwolf/Magic-Sand) をベースに、Kinectの代わりに[Intel RealSense D435](https://www.intelrealsense.com/depth-camera-d435/)をセンシングデバイスとして動作するように作られています。
 
