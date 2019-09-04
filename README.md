@@ -142,6 +142,11 @@ Magic Sand for RealSense2 is based on [openframeworks](http://openframeworks.cc/
 - If you are a windows user, install the kinect drivers as detailed on the [release page](https://github.com/thomwolf/Magic-Sand/releases/latest)
 - Enjoy ! (Xcode / VS2015 project files are supplied, should work also on linux)
 
+On macOS High Sierra or later, **libs/openFrameworksCompiled/project/osx/CoreOF.xcconfig** file in the openFrameworks needs to be modified.
+Delete `i386` from` VLID_ARCHS` and delete `-framework QuickTime` from` OF_CORE_FRAMEWORKS` in the **CoreOF.xcconfig** file.
+
+Be sure to check the [openframeworks](http://openframeworks.cc/) documentation and forum if you don't know it yet, it is an amazing community !
+
 ### How it can be used
 The code was designed trying to be easily extendable so that additional games/apps can be developed on its basis.
 

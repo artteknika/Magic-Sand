@@ -153,6 +153,9 @@ Xcode の Build Settings の `Other Linker Flags` に `/usr/local/lib/librealsen
 - コミュニティーアドオンをopenFrameworks内の **addons** フォルダーに移動します。
 - IDEでプロジェクトを開きます。(Xcode / VS2015 project files are supplied, should work also on linux)
 
+macOS High Sierra 以降の場合、openFrameworksの **libs/openFrameworksCompiled/project/osx/CoreOF.xcconfig** ファイルを修正する必要があります。
+**CoreOF.xcconfig** ファイルの`VLID_ARCHS`から`i386`を削除し、`OF_CORE_FRAMEWORKS`から`-framework QuickTime`を削除してください。
+
 まだ不明な場合は [openframeworks](http://openframeworks.cc/) のドキュメントやフォーラムを確認してください。すばらしいコミュニティです！
 
 ### How it can be used
