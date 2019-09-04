@@ -124,11 +124,12 @@ open librealsense2.xcodeproj
 #### RealSense用のdylibの導入
 
 - ビルドターゲットを `install` に変更して実行します。
-- その後 `/usr/local/lib/librealsense2.2.dylib` が出来ていることを確認します。
+- その後 `/usr/local/lib/librealsense2.dylib` が出来ていることを確認します。
 
 #### XcodeへSDKへのパスを追加
 
-Xcode の Build Settings の `Other Linker Flags` に `/usr/local/lib/librealsense2.2.dylib` のパスを追加します。
+Xcode の Build Settings の `Other Linker Flags` に `/usr/local/lib/librealsense2.dylib` のパスを追加します。
+同様に Build Settings の `Header Search Paths` に `/usr/local/include` のパスを追加します。
 
 ### Dependencies
 

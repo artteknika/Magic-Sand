@@ -9,457 +9,6 @@
 		<string>46</string>
 		<key>objects</key>
 		<dict>
-			<key>9C5CC6184749046397FDC3C5</key>
-			<dict>
-				<key>explicitFileType</key>
-				<string>sourcecode.c.h</string>
-				<key>fileEncoding</key>
-				<string>30</string>
-				<key>isa</key>
-				<string>PBXFileReference</string>
-				<key>name</key>
-				<string>rs_advanced_mode.hpp</string>
-				<key>path</key>
-				<string>addons/ofxRealSense2/libs/librealsense2/rs_advanced_mode.hpp</string>
-				<key>sourceTree</key>
-				<string>SOURCE_ROOT</string>
-			</dict>
-			<key>CEA6A5B8A325C096368E1113</key>
-			<dict>
-				<key>explicitFileType</key>
-				<string>sourcecode.c.h</string>
-				<key>fileEncoding</key>
-				<string>30</string>
-				<key>isa</key>
-				<string>PBXFileReference</string>
-				<key>name</key>
-				<string>rsutil.h</string>
-				<key>path</key>
-				<string>addons/ofxRealSense2/libs/librealsense2/rsutil.h</string>
-				<key>sourceTree</key>
-				<string>SOURCE_ROOT</string>
-			</dict>
-			<key>734A958EA8D01E832606048B</key>
-			<dict>
-				<key>explicitFileType</key>
-				<string>sourcecode.c.h</string>
-				<key>fileEncoding</key>
-				<string>30</string>
-				<key>isa</key>
-				<string>PBXFileReference</string>
-				<key>name</key>
-				<string>rs_option.h</string>
-				<key>path</key>
-				<string>addons/ofxRealSense2/libs/librealsense2/h/rs_option.h</string>
-				<key>sourceTree</key>
-				<string>SOURCE_ROOT</string>
-			</dict>
-			<key>ED1BEF7116A2F04C8817F715</key>
-			<dict>
-				<key>explicitFileType</key>
-				<string>sourcecode.c.h</string>
-				<key>fileEncoding</key>
-				<string>30</string>
-				<key>isa</key>
-				<string>PBXFileReference</string>
-				<key>name</key>
-				<string>rs_advanced_mode_command.h</string>
-				<key>path</key>
-				<string>addons/ofxRealSense2/libs/librealsense2/h/rs_advanced_mode_command.h</string>
-				<key>sourceTree</key>
-				<string>SOURCE_ROOT</string>
-			</dict>
-			<key>773223017DCF36F673906CD1</key>
-			<dict>
-				<key>explicitFileType</key>
-				<string>sourcecode.c.h</string>
-				<key>fileEncoding</key>
-				<string>30</string>
-				<key>isa</key>
-				<string>PBXFileReference</string>
-				<key>name</key>
-				<string>rs_processing.h</string>
-				<key>path</key>
-				<string>addons/ofxRealSense2/libs/librealsense2/h/rs_processing.h</string>
-				<key>sourceTree</key>
-				<string>SOURCE_ROOT</string>
-			</dict>
-			<key>CFFC7D11E8A6E34621C90E62</key>
-			<dict>
-				<key>explicitFileType</key>
-				<string>sourcecode.c.h</string>
-				<key>fileEncoding</key>
-				<string>30</string>
-				<key>isa</key>
-				<string>PBXFileReference</string>
-				<key>name</key>
-				<string>rs_internal.h</string>
-				<key>path</key>
-				<string>addons/ofxRealSense2/libs/librealsense2/h/rs_internal.h</string>
-				<key>sourceTree</key>
-				<string>SOURCE_ROOT</string>
-			</dict>
-			<key>A3EEF4BE7982C03EC66074EE</key>
-			<dict>
-				<key>explicitFileType</key>
-				<string>sourcecode.c.h</string>
-				<key>fileEncoding</key>
-				<string>30</string>
-				<key>isa</key>
-				<string>PBXFileReference</string>
-				<key>name</key>
-				<string>rs_pipeline.h</string>
-				<key>path</key>
-				<string>addons/ofxRealSense2/libs/librealsense2/h/rs_pipeline.h</string>
-				<key>sourceTree</key>
-				<string>SOURCE_ROOT</string>
-			</dict>
-			<key>CFB47686134720545509A5F9</key>
-			<dict>
-				<key>explicitFileType</key>
-				<string>sourcecode.c.h</string>
-				<key>fileEncoding</key>
-				<string>30</string>
-				<key>isa</key>
-				<string>PBXFileReference</string>
-				<key>name</key>
-				<string>rs_types.h</string>
-				<key>path</key>
-				<string>addons/ofxRealSense2/libs/librealsense2/h/rs_types.h</string>
-				<key>sourceTree</key>
-				<string>SOURCE_ROOT</string>
-			</dict>
-			<key>E5C3169C04681E92E89532AC</key>
-			<dict>
-				<key>explicitFileType</key>
-				<string>sourcecode.c.h</string>
-				<key>fileEncoding</key>
-				<string>30</string>
-				<key>isa</key>
-				<string>PBXFileReference</string>
-				<key>name</key>
-				<string>rs_sensor.h</string>
-				<key>path</key>
-				<string>addons/ofxRealSense2/libs/librealsense2/h/rs_sensor.h</string>
-				<key>sourceTree</key>
-				<string>SOURCE_ROOT</string>
-			</dict>
-			<key>D3EB64BD375578F5DDA2C285</key>
-			<dict>
-				<key>explicitFileType</key>
-				<string>sourcecode.c.h</string>
-				<key>fileEncoding</key>
-				<string>30</string>
-				<key>isa</key>
-				<string>PBXFileReference</string>
-				<key>name</key>
-				<string>rs_device.h</string>
-				<key>path</key>
-				<string>addons/ofxRealSense2/libs/librealsense2/h/rs_device.h</string>
-				<key>sourceTree</key>
-				<string>SOURCE_ROOT</string>
-			</dict>
-			<key>10C504D6FFA41955CEF21D70</key>
-			<dict>
-				<key>explicitFileType</key>
-				<string>sourcecode.c.h</string>
-				<key>fileEncoding</key>
-				<string>30</string>
-				<key>isa</key>
-				<string>PBXFileReference</string>
-				<key>name</key>
-				<string>rs_record_playback.h</string>
-				<key>path</key>
-				<string>addons/ofxRealSense2/libs/librealsense2/h/rs_record_playback.h</string>
-				<key>sourceTree</key>
-				<string>SOURCE_ROOT</string>
-			</dict>
-			<key>AF7D9683D006BD62398687F0</key>
-			<dict>
-				<key>explicitFileType</key>
-				<string>sourcecode.c.h</string>
-				<key>fileEncoding</key>
-				<string>30</string>
-				<key>isa</key>
-				<string>PBXFileReference</string>
-				<key>name</key>
-				<string>rs_context.h</string>
-				<key>path</key>
-				<string>addons/ofxRealSense2/libs/librealsense2/h/rs_context.h</string>
-				<key>sourceTree</key>
-				<string>SOURCE_ROOT</string>
-			</dict>
-			<key>9D0338A2FF6927404067E923</key>
-			<dict>
-				<key>children</key>
-				<array>
-					<string>7589FEC37DD337D1E498992E</string>
-					<string>AF7D9683D006BD62398687F0</string>
-					<string>10C504D6FFA41955CEF21D70</string>
-					<string>D3EB64BD375578F5DDA2C285</string>
-					<string>E5C3169C04681E92E89532AC</string>
-					<string>CFB47686134720545509A5F9</string>
-					<string>A3EEF4BE7982C03EC66074EE</string>
-					<string>CFFC7D11E8A6E34621C90E62</string>
-					<string>773223017DCF36F673906CD1</string>
-					<string>ED1BEF7116A2F04C8817F715</string>
-					<string>734A958EA8D01E832606048B</string>
-				</array>
-				<key>isa</key>
-				<string>PBXGroup</string>
-				<key>name</key>
-				<string>h</string>
-				<key>sourceTree</key>
-				<string>&lt;group&gt;</string>
-			</dict>
-			<key>7589FEC37DD337D1E498992E</key>
-			<dict>
-				<key>explicitFileType</key>
-				<string>sourcecode.c.h</string>
-				<key>fileEncoding</key>
-				<string>30</string>
-				<key>isa</key>
-				<string>PBXFileReference</string>
-				<key>name</key>
-				<string>rs_frame.h</string>
-				<key>path</key>
-				<string>addons/ofxRealSense2/libs/librealsense2/h/rs_frame.h</string>
-				<key>sourceTree</key>
-				<string>SOURCE_ROOT</string>
-			</dict>
-			<key>F841DBF2E10DA861AABD9501</key>
-			<dict>
-				<key>explicitFileType</key>
-				<string>sourcecode.c.h</string>
-				<key>fileEncoding</key>
-				<string>30</string>
-				<key>isa</key>
-				<string>PBXFileReference</string>
-				<key>name</key>
-				<string>rs.h</string>
-				<key>path</key>
-				<string>addons/ofxRealSense2/libs/librealsense2/rs.h</string>
-				<key>sourceTree</key>
-				<string>SOURCE_ROOT</string>
-			</dict>
-			<key>E61C7E59B272A0A0E3CAB7DF</key>
-			<dict>
-				<key>explicitFileType</key>
-				<string>sourcecode.c.h</string>
-				<key>fileEncoding</key>
-				<string>30</string>
-				<key>isa</key>
-				<string>PBXFileReference</string>
-				<key>name</key>
-				<string>rs_sensor.hpp</string>
-				<key>path</key>
-				<string>addons/ofxRealSense2/libs/librealsense2/hpp/rs_sensor.hpp</string>
-				<key>sourceTree</key>
-				<string>SOURCE_ROOT</string>
-			</dict>
-			<key>E87D246E9930A26ED3C5712E</key>
-			<dict>
-				<key>explicitFileType</key>
-				<string>sourcecode.c.h</string>
-				<key>fileEncoding</key>
-				<string>30</string>
-				<key>isa</key>
-				<string>PBXFileReference</string>
-				<key>name</key>
-				<string>rs_context.hpp</string>
-				<key>path</key>
-				<string>addons/ofxRealSense2/libs/librealsense2/hpp/rs_context.hpp</string>
-				<key>sourceTree</key>
-				<string>SOURCE_ROOT</string>
-			</dict>
-			<key>9B74839492813A25EB3E32BB</key>
-			<dict>
-				<key>explicitFileType</key>
-				<string>sourcecode.c.h</string>
-				<key>fileEncoding</key>
-				<string>30</string>
-				<key>isa</key>
-				<string>PBXFileReference</string>
-				<key>name</key>
-				<string>rs_frame.hpp</string>
-				<key>path</key>
-				<string>addons/ofxRealSense2/libs/librealsense2/hpp/rs_frame.hpp</string>
-				<key>sourceTree</key>
-				<string>SOURCE_ROOT</string>
-			</dict>
-			<key>06DB264BCA0123AA00F9FEB8</key>
-			<dict>
-				<key>explicitFileType</key>
-				<string>sourcecode.c.h</string>
-				<key>fileEncoding</key>
-				<string>30</string>
-				<key>isa</key>
-				<string>PBXFileReference</string>
-				<key>name</key>
-				<string>rs_types.hpp</string>
-				<key>path</key>
-				<string>addons/ofxRealSense2/libs/librealsense2/hpp/rs_types.hpp</string>
-				<key>sourceTree</key>
-				<string>SOURCE_ROOT</string>
-			</dict>
-			<key>3D17A3A016C58371797A2E49</key>
-			<dict>
-				<key>explicitFileType</key>
-				<string>sourcecode.c.h</string>
-				<key>fileEncoding</key>
-				<string>30</string>
-				<key>isa</key>
-				<string>PBXFileReference</string>
-				<key>name</key>
-				<string>rs_pipeline.hpp</string>
-				<key>path</key>
-				<string>addons/ofxRealSense2/libs/librealsense2/hpp/rs_pipeline.hpp</string>
-				<key>sourceTree</key>
-				<string>SOURCE_ROOT</string>
-			</dict>
-			<key>9D86830895BF01307957DD04</key>
-			<dict>
-				<key>explicitFileType</key>
-				<string>sourcecode.c.h</string>
-				<key>fileEncoding</key>
-				<string>30</string>
-				<key>isa</key>
-				<string>PBXFileReference</string>
-				<key>name</key>
-				<string>rs_record_playback.hpp</string>
-				<key>path</key>
-				<string>addons/ofxRealSense2/libs/librealsense2/hpp/rs_record_playback.hpp</string>
-				<key>sourceTree</key>
-				<string>SOURCE_ROOT</string>
-			</dict>
-			<key>A3DE7C91E0817398D87192B7</key>
-			<dict>
-				<key>explicitFileType</key>
-				<string>sourcecode.c.h</string>
-				<key>fileEncoding</key>
-				<string>30</string>
-				<key>isa</key>
-				<string>PBXFileReference</string>
-				<key>name</key>
-				<string>rs_processing.hpp</string>
-				<key>path</key>
-				<string>addons/ofxRealSense2/libs/librealsense2/hpp/rs_processing.hpp</string>
-				<key>sourceTree</key>
-				<string>SOURCE_ROOT</string>
-			</dict>
-			<key>5DA782CD7497850F2222D5F2</key>
-			<dict>
-				<key>explicitFileType</key>
-				<string>sourcecode.c.h</string>
-				<key>fileEncoding</key>
-				<string>30</string>
-				<key>isa</key>
-				<string>PBXFileReference</string>
-				<key>name</key>
-				<string>rs_internal.hpp</string>
-				<key>path</key>
-				<string>addons/ofxRealSense2/libs/librealsense2/hpp/rs_internal.hpp</string>
-				<key>sourceTree</key>
-				<string>SOURCE_ROOT</string>
-			</dict>
-			<key>538A38FC6FA1967BC22FCD59</key>
-			<dict>
-				<key>children</key>
-				<array>
-					<string>C033DA6FC7246C51A26F11E5</string>
-					<string>5DA782CD7497850F2222D5F2</string>
-					<string>A3DE7C91E0817398D87192B7</string>
-					<string>9D86830895BF01307957DD04</string>
-					<string>3D17A3A016C58371797A2E49</string>
-					<string>06DB264BCA0123AA00F9FEB8</string>
-					<string>9B74839492813A25EB3E32BB</string>
-					<string>E87D246E9930A26ED3C5712E</string>
-					<string>E61C7E59B272A0A0E3CAB7DF</string>
-				</array>
-				<key>isa</key>
-				<string>PBXGroup</string>
-				<key>name</key>
-				<string>hpp</string>
-				<key>sourceTree</key>
-				<string>&lt;group&gt;</string>
-			</dict>
-			<key>C033DA6FC7246C51A26F11E5</key>
-			<dict>
-				<key>explicitFileType</key>
-				<string>sourcecode.c.h</string>
-				<key>fileEncoding</key>
-				<string>30</string>
-				<key>isa</key>
-				<string>PBXFileReference</string>
-				<key>name</key>
-				<string>rs_device.hpp</string>
-				<key>path</key>
-				<string>addons/ofxRealSense2/libs/librealsense2/hpp/rs_device.hpp</string>
-				<key>sourceTree</key>
-				<string>SOURCE_ROOT</string>
-			</dict>
-			<key>497650A88E024BC5A212AC82</key>
-			<dict>
-				<key>explicitFileType</key>
-				<string>sourcecode.c.h</string>
-				<key>fileEncoding</key>
-				<string>30</string>
-				<key>isa</key>
-				<string>PBXFileReference</string>
-				<key>name</key>
-				<string>rs.hpp</string>
-				<key>path</key>
-				<string>addons/ofxRealSense2/libs/librealsense2/rs.hpp</string>
-				<key>sourceTree</key>
-				<string>SOURCE_ROOT</string>
-			</dict>
-			<key>4224D54615A44B07FB595267</key>
-			<dict>
-				<key>children</key>
-				<array>
-					<string>86F499E09DFD70DBDFFA5D8A</string>
-					<string>497650A88E024BC5A212AC82</string>
-					<string>538A38FC6FA1967BC22FCD59</string>
-					<string>F841DBF2E10DA861AABD9501</string>
-					<string>9D0338A2FF6927404067E923</string>
-					<string>CEA6A5B8A325C096368E1113</string>
-					<string>9C5CC6184749046397FDC3C5</string>
-				</array>
-				<key>isa</key>
-				<string>PBXGroup</string>
-				<key>name</key>
-				<string>librealsense2</string>
-				<key>sourceTree</key>
-				<string>&lt;group&gt;</string>
-			</dict>
-			<key>613F1357466CB0B23C175D31</key>
-			<dict>
-				<key>children</key>
-				<array>
-					<string>4224D54615A44B07FB595267</string>
-				</array>
-				<key>isa</key>
-				<string>PBXGroup</string>
-				<key>name</key>
-				<string>libs</string>
-				<key>sourceTree</key>
-				<string>&lt;group&gt;</string>
-			</dict>
-			<key>86F499E09DFD70DBDFFA5D8A</key>
-			<dict>
-				<key>explicitFileType</key>
-				<string>sourcecode.c.h</string>
-				<key>fileEncoding</key>
-				<string>30</string>
-				<key>isa</key>
-				<string>PBXFileReference</string>
-				<key>name</key>
-				<string>rs_advanced_mode.h</string>
-				<key>path</key>
-				<string>addons/ofxRealSense2/libs/librealsense2/rs_advanced_mode.h</string>
-				<key>sourceTree</key>
-				<string>SOURCE_ROOT</string>
-			</dict>
 			<key>438057C19F8C4C8A7B652B84</key>
 			<dict>
 				<key>fileRef</key>
@@ -501,7 +50,6 @@
 				<key>children</key>
 				<array>
 					<string>4A2EA043AC8D4EDCBE5436DA</string>
-					<string>613F1357466CB0B23C175D31</string>
 				</array>
 				<key>isa</key>
 				<string>PBXGroup</string>
@@ -7828,7 +7376,7 @@
 						<string>$(OF_CORE_FRAMEWORKS) $(OF_CORE_LIBS)</string>
 						<string>../../../addons/ofxKinect/libs/libusb-1.0/lib/osx/usb-1.0.a</string>
 						<string>../../../addons/ofxOpenCv/libs/opencv/lib/osx/opencv.a</string>
-						<string>/usr/local/lib/librealsense2.2.dylib</string>
+						<string>/usr/local/lib/librealsense2.dylib</string>
 					</array>
 					<key>HEADER_SEARCH_PATHS</key>
 					<array>
@@ -7901,11 +7449,7 @@
 						<string>../../../addons/ofxParagraph/src</string>
 						<string>../../../addons/ofxXmlSettings/libs</string>
 						<string>../../../addons/ofxXmlSettings/src</string>
-						<string>addons/ofxRealSense2/libs</string>
-						<string>addons/ofxRealSense2/libs/librealsense2</string>
-						<string>addons/ofxRealSense2/libs/librealsense2/h</string>
-						<string>addons/ofxRealSense2/libs/librealsense2/hpp</string>
-						<string>addons/ofxRealSense2/src</string>
+						<string>/usr/local/include</string>
 					</array>
 					<key>CONFIGURATION_BUILD_DIR</key>
 					<string>$(SRCROOT)/bin/</string>
@@ -7965,7 +7509,7 @@
 						<string>$(OF_CORE_FRAMEWORKS) $(OF_CORE_LIBS)</string>
 						<string>../../../addons/ofxKinect/libs/libusb-1.0/lib/osx/usb-1.0.a</string>
 						<string>../../../addons/ofxOpenCv/libs/opencv/lib/osx/opencv.a</string>
-						<string>/usr/local/lib/librealsense2.2.dylib</string>
+						<string>/usr/local/lib/librealsense2.dylib</string>
 					</array>
 					<key>HEADER_SEARCH_PATHS</key>
 					<array>
@@ -8038,11 +7582,7 @@
 						<string>../../../addons/ofxParagraph/src</string>
 						<string>../../../addons/ofxXmlSettings/libs</string>
 						<string>../../../addons/ofxXmlSettings/src</string>
-						<string>addons/ofxRealSense2/libs</string>
-						<string>addons/ofxRealSense2/libs/librealsense2</string>
-						<string>addons/ofxRealSense2/libs/librealsense2/h</string>
-						<string>addons/ofxRealSense2/libs/librealsense2/hpp</string>
-						<string>addons/ofxRealSense2/src</string>
+						<string>/usr/local/include</string>
 					</array>
 					<key>CONFIGURATION_BUILD_DIR</key>
 					<string>$(SRCROOT)/bin/</string>
@@ -8237,7 +7777,7 @@
 						<string>$(OF_CORE_FRAMEWORKS) $(OF_CORE_LIBS)</string>
 						<string>../../../addons/ofxKinect/libs/libusb-1.0/lib/osx/usb-1.0.a</string>
 						<string>../../../addons/ofxOpenCv/libs/opencv/lib/osx/opencv.a</string>
-						<string>/usr/local/lib/librealsense2.2.dylib</string>
+						<string>/usr/local/lib/librealsense2.dylib</string>
 					</array>
 					<key>HEADER_SEARCH_PATHS</key>
 					<array>
@@ -8310,11 +7850,7 @@
 						<string>../../../addons/ofxParagraph/src</string>
 						<string>../../../addons/ofxXmlSettings/libs</string>
 						<string>../../../addons/ofxXmlSettings/src</string>
-						<string>addons/ofxRealSense2/libs</string>
-						<string>addons/ofxRealSense2/libs/librealsense2</string>
-						<string>addons/ofxRealSense2/libs/librealsense2/h</string>
-						<string>addons/ofxRealSense2/libs/librealsense2/hpp</string>
-						<string>addons/ofxRealSense2/src</string>
+						<string>/usr/local/include</string>
 					</array>
 					<key>COMBINE_HIDPI_IMAGES</key>
 					<string>YES</string>
@@ -8364,7 +7900,7 @@
 						<string>$(OF_CORE_FRAMEWORKS) $(OF_CORE_LIBS)</string>
 						<string>../../../addons/ofxKinect/libs/libusb-1.0/lib/osx/usb-1.0.a</string>
 						<string>../../../addons/ofxOpenCv/libs/opencv/lib/osx/opencv.a</string>
-						<string>/usr/local/lib/librealsense2.2.dylib</string>
+						<string>/usr/local/lib/librealsense2.dylib</string>
 					</array>
 					<key>HEADER_SEARCH_PATHS</key>
 					<array>
@@ -8437,11 +7973,7 @@
 						<string>../../../addons/ofxParagraph/src</string>
 						<string>../../../addons/ofxXmlSettings/libs</string>
 						<string>../../../addons/ofxXmlSettings/src</string>
-						<string>addons/ofxRealSense2/libs</string>
-						<string>addons/ofxRealSense2/libs/librealsense2</string>
-						<string>addons/ofxRealSense2/libs/librealsense2/h</string>
-						<string>addons/ofxRealSense2/libs/librealsense2/hpp</string>
-						<string>addons/ofxRealSense2/src</string>
+						<string>/usr/local/include</string>
 					</array>
 					<key>COMBINE_HIDPI_IMAGES</key>
 					<string>YES</string>

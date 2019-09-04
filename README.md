@@ -115,13 +115,13 @@ open librealsense2.xcodeproj
 
 #### After opening XCode
   - if it build successful, build target change `install`, launch SDK.
-  - After build successful, Check `/usr/local/lib/librealsense2.2.dylib`
+  - After build successful, Check `/usr/local/lib/librealsense2.dylib`
 
 #### SDK path for Magic-Sand
   - open cloned magic-sand project by Xcode.
   - After opening magic-sand, select project build setting.
-  - Search `OTHER LINKER FLAGS`
-  - Add RealSense dylib path `/usr/local/lib/librealsense2.2.dylib` to `OTHER LINKER FLAGS` path list
+  - Add RealSense dylib path `/usr/local/lib/librealsense2.dylib` to `Other Linker Flags` path list
+  - Add RealSense header path `/usr/local/include` to `Header Search Paths` path list
 
 ### Dependencies
 Magic Sand for RealSense2 is based on [openframeworks](http://openframeworks.cc/) release 0.9.8 and makes use of the following addons:
