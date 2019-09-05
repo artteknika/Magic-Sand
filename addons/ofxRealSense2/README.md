@@ -1,49 +1,5 @@
 # ofxRealSense2
-openFrameworks の環境下でRealSenseを動かすためのaddonになります。
-RealSense SDK が不安定なので推奨するバージョン以外で行った場合に正常な動作をしない場合があります。
-
-動作確認された環境は以下のようになります。
-
-* 開発環境
-    * macOS 10.13 High Sierra
-    * Xcode ver 9.3
-    * [Intel RealSense SDK 2.0](https://github.com/IntelRealSense/librealsense) (build 2.13.0)
-    * Intel RealSense D435
-
-## 環境構築
-
-RealSense でこのソフトウェアをデバッグする際に、外部の SDK などが必要になります。以下のコマンドを用いて導入します。
-あらかじめ [Homebrew](https://brew.sh/) がインストールされているものとします。
-
-```
-# Clone IntelRealSense/librealsense
-git clone https://github.com/IntelRealSense/librealsense.git
-
-# Get needs package
-brew install libusb pkg-config
-brew install glfw
-brew install cmake
-
-# Setup build
-cd ./librealsense # move library
-git reset --hard 719b0b9 # change version
-mkdir build && cd build # make build dir and move build
-sudo xcode-select --reset # init xcode-select
-cmake .. -DBUILD_EXAMPLES=true -DBUILD_WITH_OPENMP=false -DHWM_OVER_XU=false -G Xcode # cmake librealsense
-
-# Open with Xcode
-open librealsense2.xcodeproj
-```
-
-### RealSense用のdylibの導入
-
-- Xcodeで開いたプロジェクトのビルドターゲットを `install` に変更して実行します。
-- その後 `/usr/local/lib/librealsense2.dylib` が出来ていることを確認します。
-
-### XcodeへSDKへのパスを追加
-
-Xcode の Build Settings の `Other Linker Flags` に `/usr/local/lib/librealsense2.dylib` のパスを追加します。
-同様に Build Settings の `Header Search Paths` に `/usr/local/include` のパスを追加します。
+openFrameworksでRealSenseを制御するためのaddonです。
 
 ## `ofxRealSense2`の関数
 
