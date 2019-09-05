@@ -329,7 +329,7 @@ ofVec2f gradientAtRs2Coord(float x, float y);
   - `ColorMap.cpp`
 
 # Changelog
-## [1.5.4.1 for RealSense2]() - - -2019
+## [1.5.4.1 for RealSense](https://github.com/artteknika/Magic-Sand-for-RealSense/releases/tag/v1.5.4.1-for-Ralsense) - 05-09-2019
 Supported RealSense SDK 2
 
 ### Changed

@@ -331,10 +331,8 @@ Magic Sand does not provide dynamic rain features (typically require a stronger 
 
 # Changelog
 
-## [1.5.4.1 for RealSense2]() - - -2019
-Supported RealSense
-### Bug fixes
-- a draw depth frame was broken in 1.5.4.1 - it did not show depth frame. Now fixed
+## [1.5.4.1 for RealSense](https://github.com/artteknika/Magic-Sand-for-RealSense/releases/tag/v1.5.4.1-for-Ralsense) - 05-09-2019
+Supported RealSense SDK 2
 
 ## Changed
 - refer to Point to change
