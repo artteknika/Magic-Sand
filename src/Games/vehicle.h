@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include "ofxOpenCv.h"
 #include "ofxCv.h"
 
-#include "../KinectProjector/KinectProjector.h"
+#include "../Rs2Projector/Rs2Projector.h"
 
 // We can not interchange info from Fish to Sharks and from Sharks to Fish at the same time. This class is used as an intermediate
 class DangerousBOID
@@ -46,7 +46,7 @@ A good tutorial is here : https://gamedevelopment.tutsplus.com/series/understand
 class Vehicle{
 
 public:
-    Vehicle(std::shared_ptr<KinectProjector> const& k, ofPoint slocation, ofRectangle sborders, bool sliveInWater, ofVec2f motherLocation);
+    Vehicle(std::shared_ptr<Rs2Projector> const& k, ofPoint slocation, ofRectangle sborders, bool sliveInWater, ofVec2f motherLocation);
     
     // Virtual functions
     virtual void setup() = 0;
@@ -99,7 +99,7 @@ protected:
     virtual ofPoint wanderEffect();
     void applyVelocityChange(const ofPoint & force);
     
-    std::shared_ptr<KinectProjector> kinectProjector;
+    std::shared_ptr<Rs2Projector> rs2Projector;
 
 	int GetTimeStamp();
 
@@ -158,7 +158,7 @@ protected:
 
 class Fish : public Vehicle {
 public:
-    Fish(std::shared_ptr<KinectProjector> const& k, ofPoint slocation, ofRectangle sborders, ofVec2f motherLocation) : Vehicle(k, slocation, sborders, true, motherLocation){}
+    Fish(std::shared_ptr<Rs2Projector> const& k, ofPoint slocation, ofRectangle sborders, ofVec2f motherLocation) : Vehicle(k, slocation, sborders, true, motherLocation){}
 
     void setup();
 	void UpdateAgeAndSize();
@@ -183,7 +183,7 @@ private:
 
 class Shark : public Vehicle {
 public:
-	Shark(std::shared_ptr<KinectProjector> const& k, ofPoint slocation, ofRectangle sborders, ofVec2f motherLocation) : Vehicle(k, slocation, sborders, true, motherLocation) {}
+	Shark(std::shared_ptr<Rs2Projector> const& k, ofPoint slocation, ofRectangle sborders, ofVec2f motherLocation) : Vehicle(k, slocation, sborders, true, motherLocation) {}
 
 	void setup();
 	void applyBehaviours(std::vector<Fish>& vehicles);
@@ -216,7 +216,7 @@ private:
 
 class Rabbit : public Vehicle {
 public:
-    Rabbit(std::shared_ptr<KinectProjector> const& k, ofPoint slocation, ofRectangle sborders, ofVec2f motherLocation) : Vehicle(k, slocation, sborders, false, motherLocation){}
+    Rabbit(std::shared_ptr<Rs2Projector> const& k, ofPoint slocation, ofRectangle sborders, ofVec2f motherLocation) : Vehicle(k, slocation, sborders, false, motherLocation){}
     
     void setup();
     void applyBehaviours(bool seekMother, std::vector<Rabbit>& vehicles);

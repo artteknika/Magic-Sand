@@ -24,8 +24,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 // Default value of static variable
 bool Vehicle::DrawFlipped = false;
 
-Vehicle::Vehicle(std::shared_ptr<KinectProjector> const& k, ofPoint slocation, ofRectangle sborders, bool sliveInWater, ofVec2f smotherLocation) {
-    kinectProjector = k;
+Vehicle::Vehicle(std::shared_ptr<Rs2Projector> const& k, ofPoint slocation, ofRectangle sborders, bool sliveInWater, ofVec2f smotherLocation) {
+    rs2Projector = k;
     liveInWater = sliveInWater;
     location = slocation;
     borders = sborders;
@@ -48,12 +48,12 @@ void Vehicle::updateBeachDetection(){
     int i = 1;
     while (i < 10 && !beach)
     {
-        bool overwater = kinectProjector->elevationAtKinectCoord(futureLocation.x, futureLocation.y) > 0;
+        bool overwater = rs2Projector->elevationAtrs2Coord(futureLocation.x, futureLocation.y) > 0;
         if ((overwater && liveInWater) || (!overwater && !liveInWater))
         {
             beach = true;
             beachDist = i;
-            beachSlope = kinectProjector->gradientAtKinectCoord(futureLocation.x,futureLocation.y);
+            beachSlope = rs2Projector->gradientAtrs2Coord(futureLocation.x,futureLocation.y);
             if (liveInWater)
                 beachSlope *= -1;
         }
@@ -217,7 +217,7 @@ int Vehicle::GetTimeStamp()
 }
 
 void Vehicle::update(){
-    projectorCoord = kinectProjector->kinectCoordToProjCoord(location.x, location.y);
+    projectorCoord = rs2Projector->rs2CoordToProjCoord(location.x, location.y);
     if (!mother || velocity.lengthSquared() != 0)
     {
         velocity += globalVelocityChange;

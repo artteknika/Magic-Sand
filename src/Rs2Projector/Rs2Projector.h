@@ -1,6 +1,6 @@
 /***********************************************************************
 KinectProjector - KinectProjector takes care of the spatial conversion
-between the various coordinate systems, control the kinectgrabber and
+between the various coordinate systems, control the Kinectgrabber and
 perform the calibration of the kinect and projector.
 Copyright (c) 2016-2017 Thomas Wolf and Rasmus R. Paulsen (people.compute.dtu.dk/rapa)
 
@@ -21,23 +21,23 @@ with the Magic Sand; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 ***********************************************************************/
 
-#ifndef __GreatSand__KinectProjector__
-#define __GreatSand__KinectProjector__
+#ifndef __GreatSand__rs2Projector__
+#define __GreatSand__rs2Projector__
 
 #include <iostream>
 #include "ofMain.h"
 #include "ofxOpenCv.h"
 #include "ofxCv.h"
-#include "KinectGrabber.h"
+#include "Rs2Grabber.h"
 #include "ofxModal.h"
 
-#include "KinectProjectorCalibration.h"
+#include "Rs2ProjectorCalibration.h"
 #include "Utils.h"
 #include "TemporalFrameFilter.h"
 
-class ofxModalThemeProjKinect : public ofxModalTheme {
+class ofxModalThemeProjRs2 : public ofxModalTheme {
 public:
-    ofxModalThemeProjKinect()
+    ofxModalThemeProjRs2()
     {
         animation.speed = 0.1f;
         fonts.title = ofxSmartFont::add("ofxbraitsch/fonts/HelveticaNeueLTStd-Md.otf", 20, "modal-title");
@@ -45,9 +45,9 @@ public:
     }
 };
 
-class KinectProjector {
+class Rs2Projector {
 public:
-    KinectProjector(std::shared_ptr<ofAppBaseWindow> const& p);
+    Rs2Projector(std::shared_ptr<ofAppBaseWindow> const& p);
     
     // Running loop functions
     void setup(bool sdisplayGui);
@@ -60,15 +60,15 @@ public:
     // Coordinate conversion functions
     ofVec2f worldCoordToProjCoord(ofVec3f vin);
 	ofVec3f projCoordAndWorldZToWorldCoord(float projX, float projY, float worldZ);
-	ofVec2f kinectCoordToProjCoord(float x, float y);
-	ofVec2f kinectCoordToProjCoord(float x, float y, float z);
+	ofVec2f rs2CoordToProjCoord(float x, float y);
+	ofVec2f rs2CoordToProjCoord(float x, float y, float z);
 	
-	ofVec3f kinectCoordToWorldCoord(float x, float y);
-	ofVec2f worldCoordTokinectCoord(ofVec3f wc);
-	ofVec3f RawKinectCoordToWorldCoord(float x, float y);
-    float elevationAtKinectCoord(float x, float y);
-    float elevationToKinectDepth(float elevation, float x, float y);
-    ofVec2f gradientAtKinectCoord(float x, float y);
+	ofVec3f rs2CoordToWorldCoord(float x, float y);
+	ofVec2f worldCoordTors2Coord(ofVec3f wc);
+	ofVec3f Rawrs2CoordToWorldCoord(float x, float y);
+    float elevationAtrs2Coord(float x, float y);
+    float elevationTors2Depth(float elevation, float x, float y);
+    ofVec2f gradientAtrs2Coord(float x, float y);
 
 	// Try to start the application - assumes calibration has been done before
 	void startApplication();
@@ -76,7 +76,7 @@ public:
 	// Setup & calibration functions
     void startFullCalibration();
     void startAutomaticROIDetection();
-    void startAutomaticKinectProjectorCalibration();
+    void startAutomaticrs2ProjectorCalibration();
     void setGradFieldResolution(int gradFieldResolution);
 	void updateStatusGUI();
 	void setSpatialFiltering(bool sspatialFiltering);
@@ -108,13 +108,13 @@ public:
     void unbind(){
         FilteredDepthImage.getTexture().unbind();
     }
-    ofMatrix4x4 getTransposedKinectWorldMatrix(){
-        return kinectWorldMatrix.getTransposedOf(kinectWorldMatrix);
+    ofMatrix4x4 getTransposedRs2WorldMatrix(){
+        return rs2WorldMatrix.getTransposedOf(rs2WorldMatrix);
     } // For shaders: OpenGL is row-major order and OF is column-major order
-    ofMatrix4x4 getTransposedKinectProjMatrix(){
-        return kinectProjMatrix.getTransposedOf(kinectProjMatrix);
+    ofMatrix4x4 getTransposedRs2ProjMatrix(){
+        return rs2ProjMatrix.getTransposedOf(rs2ProjMatrix);
     }
-	// Depending on the mount direction of the Kinect, projections can be flipped. 
+	// Depending on the mount direction of the RealSense2, projections can be flipped.
 	bool getProjectionFlipped();
 
 
@@ -122,11 +122,11 @@ public:
     ofTexture & getTexture(){
         return FilteredDepthImage.getTexture();
     }
-    ofRectangle getKinectROI(){
-        return kinectROI;
+    ofRectangle getRs2ROI(){
+        return rs2ROI;
     }
-    ofVec2f getKinectRes(){
-        return kinectRes;
+    ofVec2f getRs2Res(){
+        return rs2Res;
     }
     ofVec4f getBasePlaneEq(){
         return basePlaneEq;
@@ -138,14 +138,14 @@ public:
         return basePlaneOffset;
     }
 
-	// Get the ROI of the projector window that should match the Kinect ROI
+	// Get the ROI of the projector window that should match the RealSense2 ROI
 	ofRectangle getProjectorActiveROI();
 
 	// Map Game interface
 	bool getBinaryLandImage(ofxCvGrayscaleImage& BinImg);
 
 	bool isCalibrated(){
-        return projKinectCalibrated;
+        return projRs2Calibrated;
     }
     bool isImageStabilized(){
         return imageStabilized;
@@ -153,11 +153,8 @@ public:
     bool isBasePlaneUpdated(){ // To be called after update()
         return basePlaneUpdated;
     }
-    //bool isROIUpdated(){ // To be called after update()  // Could be set using manual mouse based drawing and cleared before the information was propagated to other modules
-    //    return ROIUpdated;
-    //}
     bool isCalibrationUpdated(){ // To be called after update()
-        return projKinectCalibrationUpdated;
+        return projRs2CalibrationUpdated;
     }
 
 	// The overall application stat
@@ -178,7 +175,7 @@ public:
 
 	// Debug functions
 	void SaveFilteredDepthImage();
-	void SaveKinectColorImage();
+	void SaveRs2ColorImage();
 
 private:
 
@@ -188,8 +185,8 @@ private:
         CALIBRATION_STATE_ROI_AUTO_DETERMINATION,
         CALIBRATION_STATE_ROI_MANUAL_DETERMINATION,
 		CALIBRATION_STATE_ROI_FROM_FILE,
-		CALIBRATION_STATE_PROJ_KINECT_AUTO_CALIBRATION,
-        CALIBRATION_STATE_PROJ_KINECT_MANUAL_CALIBRATION
+		CALIBRATION_STATE_PROJ_RS2_AUTO_CALIBRATION,
+        CALIBRATION_STATE_PROJ_RS2_MANUAL_CALIBRATION
     };
     enum Full_Calibration_state
     {
@@ -217,7 +214,8 @@ private:
     void exit(ofEventArgs& e);
     void setupGradientField();
     
-
+    
+    void init_FBOprojector();
     void updateCalibration();
     void updateFullAutoCalibration();
     void updateROIAutoCalibration();
@@ -227,16 +225,16 @@ private:
 	
 //	void updateROIManualCalibration();
     void updateROIFromCalibration();
-    void setMaxKinectGrabberROI();
-    void setNewKinectROI();
-    void updateKinectGrabberROI(ofRectangle ROI);
+    void setMaxRs2GrabberROI();
+    void setNewRs2ROI();
+    void updateRs2GrabberROI(ofRectangle ROI);
 
-	void updateProjKinectAutoCalibration();
+	void updateProjRs2AutoCalibration();
 
 	double ComputeReprojectionError(bool WriteFile);
 	void CalibrateNextPoint();
 
-	void updateProjKinectManualCalibration();
+	void updateProjRs2ManualCalibration();
     bool addPointPair();
     void updateMaxOffset();
     void updateBasePlane();
@@ -250,22 +248,23 @@ private:
     bool saveSettings();
     
 	void ProcessChessBoardInput(ofxCvGrayscaleImage& image);
-	void CheckAndNormalizeKinectROI();
+	void CheckAndNormalizeRs2ROI();
 
     // State variables
     bool secondScreenFound;
-	bool kinectOpened;
-	float lastKinectOpenTry;
+	bool rs2Opened;
+	float lastRs2OpenTry;
+    double errorcounts;
 	bool ROIcalibrated;
-    bool projKinectCalibrated;
+    bool projRs2Calibrated;
 //    bool ROIUpdated;
-    bool projKinectCalibrationUpdated;
+    bool projRs2CalibrationUpdated;
 	bool basePlaneComputed;
     bool basePlaneUpdated;
     bool imageStabilized;
     bool waitingForFlattenSand;
-    bool drawKinectView;
-	bool drawKinectColorView;
+    bool drawRs2View;
+	bool drawRs2ColorView;
     Calibration_state calibrationState;
     ROI_calibration_state ROICalibState;
     Auto_calibration_state autoCalibState;
@@ -275,24 +274,24 @@ private:
     // Projector window
     std::shared_ptr<ofAppBaseWindow> projWindow;
     
-    //kinect grabber
-    KinectGrabber               kinectgrabber;
+    //rs2 grabber
+    Rs2Grabber               rs2grabber;
     bool                        spatialFiltering;
     bool                        followBigChanges;
     int                         numAveragingSlots;
 	bool                        doInpainting;
 	bool                        doFullFrameFiltering;
 
-    //kinect buffer
+    //rs2 buffer
     ofxCvFloatImage             FilteredDepthImage;
-    ofxCvColorImage             kinectColorImage;
+    ofxCvColorImage             rs2ColorImage;
     ofVec2f*                    gradField;
-	ofFpsCounter                fpsKinect;
-	ofxDatGuiTextInput*         fpsKinectText;
+	ofFpsCounter                fpsRs2;
+	ofxDatGuiTextInput*         fpsRs2Text;
 
-    // Projector and kinect variables
+    // Projector and realsense2 variables
     ofVec2f projRes;
-    ofVec2f kinectRes;
+    ofVec2f rs2Res;
 
     // FBos
     ofFbo fboProjWindow;
@@ -310,10 +309,10 @@ private:
     int fishInd;
     
     // Calibration variables
-    ofxKinectProjectorToolkit*  kpt;
+    ofxRs2ProjectorToolkit*  kpt;
     vector<ofVec2f>             currentProjectorPoints;
     vector<cv::Point2f>         cvPoints;
-    vector<ofVec3f>             pairsKinect;
+    vector<ofVec3f>             pairsRs2;
     vector<ofVec2f>             pairsProjector;
 
     // ROI calibration variables
@@ -321,7 +320,7 @@ private:
     ofxCvContourFinder          contourFinder;
     float                       threshold;
     ofPolyline                  large;
-    ofRectangle                 kinectROI, kinectROIManualCalib;
+    ofRectangle                 rs2ROI, rs2ROIManualCalib;
 	ofVec2f                     ROIStartPoint;
 	ofVec2f                     ROICurrentPoint;
 	bool                        doShowROIonProjector;
@@ -332,10 +331,10 @@ private:
     ofVec4f basePlaneEq; // Base plane equation in GLSL-compatible format
     
     // Conversion matrices
-    ofMatrix4x4                 kinectProjMatrix;
-    ofMatrix4x4                 kinectWorldMatrix;
+    ofMatrix4x4                 rs2ProjMatrix;
+    ofMatrix4x4                 rs2WorldMatrix;
 
-    // Max offset for keeping kinect points
+    // Max offset for keeping rs2 points
     float maxOffset;
     float maxOffsetSafeRange;
     float maxOffsetBack;
@@ -362,7 +361,7 @@ private:
 	bool displayGui;
     shared_ptr<ofxModalConfirm>   confirmModal;
     shared_ptr<ofxModalAlert>   calibModal;
-    shared_ptr<ofxModalThemeProjKinect>   modalTheme;
+    shared_ptr<ofxModalThemeProjRs2>   modalTheme;
     ofxDatGui* gui;
 	ofxDatGui* StatusGUI;
 	std::string calibrationText;

@@ -51,9 +51,9 @@ CBoidGameController::~CBoidGameController()
 {
 }
 
-void CBoidGameController::setup(std::shared_ptr<KinectProjector> const& k)
+void CBoidGameController::setup(std::shared_ptr<Rs2Projector> const& k)
 {
-	kinectProjector = k;
+	rs2Projector = k;
 
 	ofTrueTypeFont::setGlobalDpi(72);
 	if (!scoreFont.loadFont("verdana.ttf", 64))
@@ -67,7 +67,7 @@ void CBoidGameController::setup(std::shared_ptr<KinectProjector> const& k)
 	showMotherFish = false;
 	showMotherRabbit = false;
 	motherPlatformSize = 30;
-	doFlippedDrawing = kinectProjector->getProjectionFlipped();
+	doFlippedDrawing = rs2Projector->getProjectionFlipped();
 
 	setupGui();
 }
@@ -79,7 +79,7 @@ void CBoidGameController::updateBOIDS()
 	// Set static varible that indicate if all BOIDS should be drawn flipped
 	Vehicle::setDrawFlipped(doFlippedDrawing);
 
-	if (kinectProjector->isImageStabilized()) {
+	if (rs2Projector->isImageStabilized()) {
 		for (auto & f : fish) {
 			f.applyBehaviours(showMotherFish, fish, dangerBOIDS);
 			f.update();
@@ -162,7 +162,7 @@ void CBoidGameController::ComputeScores()
 	Player1Score = 0;
 	Player2Score = 0;
 
-	double xmid = kinectROI.x + kinectROI.width / 2;
+	double xmid = rs2ROI.x + rs2ROI.width / 2;
 
 	double FishMassP1 = 0;
 	double FishMassP2 = 0;
@@ -264,10 +264,10 @@ void CBoidGameController::DrawScoresOnFBO()
 
 	scoreFontSmall.drawString(P2ScoreStr, sx, sy);
 
-	double xmid = kinectROI.x + kinectROI.width / 2;
-	double ymid = kinectROI.y + kinectROI.height / 2;
+	double xmid = rs2ROI.x + rs2ROI.width / 2;
+	double ymid = rs2ROI.y + rs2ROI.height / 2;
 
-	ofVec2f projMid = kinectProjector->kinectCoordToProjCoord(xmid, ymid);
+	ofVec2f projMid = rs2Projector->rs2CoordToProjCoord(xmid, ymid);
 
 	ofSetColor(0, 255, 255);
 	ofSetLineWidth(3.0f);
@@ -478,7 +478,7 @@ bool CBoidGameController::StartGame(int difficulty)
 		return false;
 	}
 
-	projROI = kinectProjector->getProjectorActiveROI();
+	projROI = rs2Projector->getProjectorActiveROI();
 	
 	CurrentGameSequence = 0;
 	InitiateGameSequence();
@@ -523,15 +523,15 @@ void CBoidGameController::setProjectorRes(ofVec2f& PR)
 	fboVehicles.end();
 }
 
-void CBoidGameController::setKinectRes(ofVec2f& KR)
+void CBoidGameController::setRs2Res(ofVec2f& KR)
 {
-	kinectRes = KR;
+	rs2Res = KR;
 }
 
-void CBoidGameController::setKinectROI(ofRectangle &KROI)
+void CBoidGameController::setRs2ROI(ofRectangle &KROI)
 {
-	kinectROI = KROI;
-	doFlippedDrawing = kinectProjector->getProjectionFlipped();
+	rs2ROI = KROI;
+	doFlippedDrawing = rs2Projector->getProjectionFlipped();
 }
 
 void CBoidGameController::setDebug(bool flag)
@@ -589,14 +589,14 @@ void CBoidGameController::SetupGameSequence()
 void CBoidGameController::addNewFish() {
 	ofVec2f location;
 	// Do not add fish at borders
-	double W = kinectROI.getWidth() * 0.60;
-	double H = kinectROI.getHeight() * 0.60;
-	double X = kinectROI.getLeft() + 0.20 * W;
-	double Y = kinectROI.getTop() + 0.20 * H;
+	double W = rs2ROI.getWidth() * 0.60;
+	double H = rs2ROI.getHeight() * 0.60;
+	double X = rs2ROI.getLeft() + 0.20 * W;
+	double Y = rs2ROI.getTop() + 0.20 * H;
 	ofRectangle fishROI(X, Y, W, H);
 
 	setRandomVehicleLocation(fishROI, true, location);
-	auto f = Fish(kinectProjector, location, kinectROI, motherFish);
+	auto f = Fish(rs2Projector, location, rs2ROI, motherFish);
 	f.setup();
 	fish.push_back(f);
 
@@ -608,14 +608,14 @@ void CBoidGameController::addNewShark()
 {
 	ofVec2f location;
 	// Do not add  at borders
-	double W = kinectROI.getWidth() * 0.60;
-	double H = kinectROI.getHeight() * 0.60;
-	double X = kinectROI.getLeft() + 0.20 * W;
-	double Y = kinectROI.getTop() + 0.20 * H;
+	double W = rs2ROI.getWidth() * 0.60;
+	double H = rs2ROI.getHeight() * 0.60;
+	double X = rs2ROI.getLeft() + 0.20 * W;
+	double Y = rs2ROI.getTop() + 0.20 * H;
 	ofRectangle ROI(X, Y, W, H);
 
 	setRandomVehicleLocation(ROI, true, location);
-	auto s = Shark(kinectProjector, location, kinectROI, motherFish);
+	auto s = Shark(rs2Projector, location, rs2ROI, motherFish);
 	s.setup();
 	sharks.push_back(s);
 
@@ -623,21 +623,21 @@ void CBoidGameController::addNewShark()
 
 void CBoidGameController::addNewRabbit() {
 	ofVec2f location;
-	double W = kinectROI.getWidth() * 0.60;
-	double H = kinectROI.getHeight() * 0.60;
-	double X = kinectROI.getLeft() + 0.20 * W;
-	double Y = kinectROI.getTop() + 0.20 * H;
+	double W = rs2ROI.getWidth() * 0.60;
+	double H = rs2ROI.getHeight() * 0.60;
+	double X = rs2ROI.getLeft() + 0.20 * W;
+	double Y = rs2ROI.getTop() + 0.20 * H;
 	ofRectangle rabbitROI(X, Y, W, H);
 	setRandomVehicleLocation(rabbitROI, false, location);
-	auto r = Rabbit(kinectProjector, location, kinectROI, motherRabbit);
+	auto r = Rabbit(rs2Projector, location, rs2ROI, motherRabbit);
 	r.setup();
 	rabbits.push_back(r);
 }
 
 bool CBoidGameController::addMotherFish() {
 	int minborderDist = 40;
-	ofRectangle internalBorders = kinectROI;
-	internalBorders.scaleFromCenter((kinectROI.width - minborderDist) / kinectROI.width, (kinectROI.height - minborderDist) / kinectROI.height);
+	ofRectangle internalBorders = rs2ROI;
+	internalBorders.scaleFromCenter((rs2ROI.width - minborderDist) / rs2ROI.width, (rs2ROI.height - minborderDist) / rs2ROI.height);
 
 	// Try to set a location for the Fish mother outside of the water to be sure the fish cannot reach her without help
 	ofVec2f location;
@@ -647,7 +647,7 @@ bool CBoidGameController::addMotherFish() {
 	motherFish = location;
 
 	// Set the mother Fish plateform location under the sea level
-	motherFish.z = kinectProjector->elevationToKinectDepth(-10, motherFish.x, motherFish.y);
+	motherFish.z = rs2Projector->elevationTors2Depth(-10, motherFish.x, motherFish.y);
 	for (auto & f : fish) {
 		f.setMotherLocation(motherFish);
 	}
@@ -657,8 +657,8 @@ bool CBoidGameController::addMotherFish() {
 
 bool CBoidGameController::addMotherRabbit() {
 	int minborderDist = 40;
-	ofRectangle internalBorders = kinectROI;
-	internalBorders.scaleFromCenter((kinectROI.width - minborderDist) / kinectROI.width, (kinectROI.height - minborderDist) / kinectROI.height);
+	ofRectangle internalBorders = rs2ROI;
+	internalBorders.scaleFromCenter((rs2ROI.width - minborderDist) / rs2ROI.width, (rs2ROI.height - minborderDist) / rs2ROI.height);
 
 	// Set a location for the Rabbits mother inside of the water to be sure the rabbits cannot reach her without help
 	ofVec2f location;
@@ -668,7 +668,7 @@ bool CBoidGameController::addMotherRabbit() {
 	motherRabbit = location;
 
 	// Set the mother Rabbit plateform location over the sea level
-	motherRabbit.z = kinectProjector->elevationToKinectDepth(10, motherRabbit.x, motherRabbit.y);
+	motherRabbit.z = rs2Projector->elevationTors2Depth(10, motherRabbit.x, motherRabbit.y);
 
 	for (auto & r : rabbits) {
 		r.setMotherLocation(motherRabbit);
@@ -685,7 +685,7 @@ bool CBoidGameController::setRandomVehicleLocation(ofRectangle area, bool liveIn
 		count++;
 		float x = ofRandom(area.getLeft(), area.getRight());
 		float y = ofRandom(area.getTop(), area.getBottom());
-		bool insideWater = kinectProjector->elevationAtKinectCoord(x, y) < 0;
+		bool insideWater = rs2Projector->elevationAtrs2Coord(x, y) < 0;
 		if ((insideWater && liveInWater) || (!insideWater && !liveInWater)) {
 			location = ofVec2f(x, y);
 			okwater = true;
@@ -725,7 +725,7 @@ void CBoidGameController::drawMotherFish()
 	float tailangle = 0;
 
 	ofPushMatrix();
-	ofTranslate(kinectProjector->kinectCoordToProjCoord(motherFish.x + tailSize, motherFish.y));
+	ofTranslate(rs2Projector->rs2CoordToProjCoord(motherFish.x + tailSize, motherFish.y));
 
 	ofFill();
 	ofSetColor(ofColor::blueSteel);
@@ -755,7 +755,7 @@ void CBoidGameController::drawMotherRabbit()
 {
 	float sc = 2; // MotherRabbit scale
 	ofPushMatrix();
-	ofTranslate(kinectProjector->kinectCoordToProjCoord(motherRabbit.x + 5 * sc, motherRabbit.y));
+	ofTranslate(rs2Projector->rs2CoordToProjCoord(motherRabbit.x + 5 * sc, motherRabbit.y));
 
 	ofFill();
 	ofSetColor(ofColor::green);

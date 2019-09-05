@@ -21,23 +21,23 @@ with the Magic Sand; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 ***********************************************************************/
 
-#include "KinectProjector.h"
+#include "Rs2Projector.h"
 #include <sstream>
 
 using namespace ofxCSG;
 
-KinectProjector::KinectProjector(std::shared_ptr<ofAppBaseWindow> const& p)
+Rs2Projector::Rs2Projector(std::shared_ptr<ofAppBaseWindow> const& p)
 :ROIcalibrated(false),
-projKinectCalibrated(false),
+projRs2Calibrated(false),
 //calibrating (false),
 basePlaneUpdated (false),
 basePlaneComputed(false),
-projKinectCalibrationUpdated (false),
+projRs2CalibrationUpdated (false),
 //ROIUpdated (false),
 imageStabilized (false),
 waitingForFlattenSand (false),
-drawKinectView(false),
-drawKinectColorView(true)
+drawRs2View(false),
+drawRs2ColorView(true)
 {
 	doShowROIonProjector = false;
 	applicationState = APPLICATION_STATE_SETUP;
@@ -47,22 +47,22 @@ drawKinectColorView(true)
 	DebugFileOutDir = "DebugFiles//";
 }
 
-void KinectProjector::setup(bool sdisplayGui)
+void Rs2Projector::setup(bool sdisplayGui)
 {
 	applicationState = APPLICATION_STATE_SETUP;
 
-	ofAddListener(ofEvents().exit, this, &KinectProjector::exit);
+	ofAddListener(ofEvents().exit, this, &Rs2Projector::exit);
 
 	// instantiate the modal windows //
-    modalTheme = make_shared<ofxModalThemeProjKinect>();
+    modalTheme = make_shared<ofxModalThemeProjRs2>();
     confirmModal = make_shared<ofxModalConfirm>();
     confirmModal->setTheme(modalTheme);
-    confirmModal->addListener(this, &KinectProjector::onConfirmModalEvent);
+    confirmModal->addListener(this, &Rs2Projector::onConfirmModalEvent);
     confirmModal->setButtonLabel("Ok");
     
     calibModal = make_shared<ofxModalAlert>();
     calibModal->setTheme(modalTheme);
-    calibModal->addListener(this, &KinectProjector::onCalibModalEvent);
+    calibModal->addListener(this, &Rs2Projector::onCalibModalEvent);
     calibModal->setButtonLabel("Cancel");
         
 	displayGui = sdisplayGui;
@@ -86,13 +86,13 @@ void KinectProjector::setup(bool sdisplayGui)
     maxOffset = maxOffsetBack;
     maxOffsetSafeRange = 50; // Range above the autocalib measured max offset
 
-    // kinectgrabber: start & default setup
-	kinectOpened = kinectgrabber.setup();
-	lastKinectOpenTry = ofGetElapsedTimef(); 
-	if (!kinectOpened)
+    // rs2grabber: start & default setup
+	rs2Opened = rs2grabber.setup();
+	lastRs2OpenTry = ofGetElapsedTimef();
+	if (!rs2Opened)
 	{
-		// If the kinect is not found and opened (which happens very often on Windows 10) then just go with default values for the Kinect
-		ofLogVerbose("KinectProjector") << "KinectProjector.setup(): Kinect not found - trying again later";
+		// If the rs2 is not found and opened (which happens very often on Windows 10) then just go with default values for the Rs2
+		ofLogVerbose("Rs2Projector") << "Rs2Projector.setup(): Rs2 not found - trying again later";
 	}
 
 	doInpainting = false;
@@ -102,34 +102,31 @@ void KinectProjector::setup(bool sdisplayGui)
     numAveragingSlots = 15;
 	TemporalFrameCounter = 0;
     
-    // Get projector and kinect width & height
+    // Get projector and rs2 width & height
     projRes = ofVec2f(projWindow->getWidth(), projWindow->getHeight());
-    kinectRes = kinectgrabber.getKinectSize();
-	kinectROI = ofRectangle(0, 0, kinectRes.x, kinectRes.y);
-	ofLogVerbose("KinectProjector") << "KinectProjector.setup(): kinectROI " << kinectROI;
+    rs2Res = rs2grabber.getRs2Size();
+	rs2ROI = ofRectangle(0, 0, rs2Res.x, rs2Res.y);
+	ofLogVerbose("Rs2Projector") << "Rs2Projector.setup(): rs2ROI " << rs2ROI;
 
     // Initialize the fbos and images
-    FilteredDepthImage.allocate(kinectRes.x, kinectRes.y);
-    kinectColorImage.allocate(kinectRes.x, kinectRes.y);
-    thresholdedImage.allocate(kinectRes.x, kinectRes.y);
+    FilteredDepthImage.allocate(rs2Res.x, rs2Res.y);
+    rs2ColorImage.allocate(rs2Res.x, rs2Res.y);
+    thresholdedImage.allocate(rs2Res.x, rs2Res.y);
     
-	kpt = new ofxKinectProjectorToolkit(projRes, kinectRes);
+	kpt = new ofxRs2ProjectorToolkit(projRes, rs2Res);
 
-	// finish kinectgrabber setup and start the grabber
-    kinectgrabber.setupFramefilter(gradFieldResolution, maxOffset, kinectROI, spatialFiltering, followBigChanges, numAveragingSlots);
-    kinectWorldMatrix = kinectgrabber.getWorldMatrix();
-    ofLogVerbose("KinectProjector") << "KinectProjector.setup(): kinectWorldMatrix: " << kinectWorldMatrix ;
+	// finish rs2grabber setup and start the grabber
+    rs2grabber.setupFramefilter(gradFieldResolution, maxOffset, rs2ROI, spatialFiltering, followBigChanges, numAveragingSlots);
+    rs2WorldMatrix = rs2grabber.getWorldMatrix();
+    ofLogVerbose("Rs2Projector") << "Rs2Projector.setup(): rs2WorldMatrix: " << rs2WorldMatrix ;
     
     // Setup gradient field
     setupGradientField();
     
-    fboProjWindow.allocate(projRes.x, projRes.y, GL_RGBA);
-    fboProjWindow.begin();
-    ofClear(255, 255, 255, 0);
-	ofBackground(255); // Set to white in setup mode
-    fboProjWindow.end();
+    // init FBOprojector
+    init_FBOprojector();
     
-    fboMainWindow.allocate(kinectRes.x, kinectRes.y, GL_RGBA);
+    fboMainWindow.allocate(rs2Res.x, rs2Res.y, GL_RGBA);
     fboMainWindow.begin();
     ofClear(255, 255, 255, 0);
     fboMainWindow.end();
@@ -137,28 +134,31 @@ void KinectProjector::setup(bool sdisplayGui)
     if (displayGui)
         setupGui();
 
-    kinectgrabber.start(); // Start the acquisition
+    rs2grabber.start(); // Start the acquisition
 
 	updateStatusGUI();
+    
+    // Calibration Error count
+    errorcounts = 0.0;
 }
 
-void KinectProjector::exit(ofEventArgs& e)
+void Rs2Projector::exit(ofEventArgs& e)
 {
 	if (ROIcalibrated)
 	{
 		if (saveSettings())
 		{
-			ofLogVerbose("KinectProjector") << "exit(): Settings saved ";
+			ofLogVerbose("Rs2Projector") << "exit(): Settings saved ";
 		}
 		else {
-			ofLogVerbose("KinectProjector") << "exit(): Settings could not be saved ";
+			ofLogVerbose("Rs2Projector") << "exit(): Settings could not be saved ";
 		}
 	}
 }
 
-void KinectProjector::setupGradientField(){
-    gradFieldcols = kinectRes.x / gradFieldResolution;
-    gradFieldrows = kinectRes.y / gradFieldResolution;
+void Rs2Projector::setupGradientField(){
+    gradFieldcols = rs2Res.x / gradFieldResolution;
+    gradFieldrows = rs2Res.y / gradFieldResolution;
     
     gradField = new ofVec2f[gradFieldcols*gradFieldrows];
     ofVec2f* gfPtr=gradField;
@@ -167,29 +167,35 @@ void KinectProjector::setupGradientField(){
             *gfPtr=ofVec2f(0);
 }
 
-void KinectProjector::setGradFieldResolution(int sgradFieldResolution){
+void Rs2Projector::setGradFieldResolution(int sgradFieldResolution){
     gradFieldResolution = sgradFieldResolution;
     setupGradientField();
-    kinectgrabber.performInThread([sgradFieldResolution](KinectGrabber & kg) {
+    rs2grabber.performInThread([sgradFieldResolution](Rs2Grabber & kg) {
         kg.setGradFieldResolution(sgradFieldResolution);
     });
 }
 
 // For some reason this call eats milliseconds - so it should only be called when something is changed
 // else it would be convenient just to call it in every update
-void KinectProjector::updateStatusGUI()
+void Rs2Projector::updateStatusGUI()
 {
-	if (kinectOpened)
+	if (rs2Opened)
 	{
-		StatusGUI->getLabel("Kinect Status")->setLabel("Kinect running");
-		StatusGUI->getLabel("Kinect Status")->setLabelColor(ofColor(0, 255, 0));
+		StatusGUI->getLabel("Rs2 Status")->setLabel("Rs2 running");
+		StatusGUI->getLabel("Rs2 Status")->setLabelColor(ofColor(0, 255, 0));
 	}
 	else
 	{
-		StatusGUI->getLabel("Kinect Status")->setLabel("Kinect not found");
-		StatusGUI->getLabel("Kinect Status")->setLabelColor(ofColor(255, 0, 0));
+		StatusGUI->getLabel("Rs2 Status")->setLabel("Rs2 not found");
+		StatusGUI->getLabel("Rs2 Status")->setLabelColor(ofColor(255, 0, 0));
 	}
-
+    if(imageStabilized){
+        StatusGUI->getLabel("Ready Calibration")->setLabel("ready calibration");
+        StatusGUI->getLabel("Ready Calibration")->setLabelColor(ofColor(0, 255, 0));
+    }else{
+        StatusGUI->getLabel("Ready Calibration")->setLabel("not ready calibration");
+        StatusGUI->getLabel("Ready Calibration")->setLabelColor(ofColor(255, 0, 0));
+    }
 	if (ROIcalibrated)
 	{
 		StatusGUI->getLabel("ROI Status")->setLabel("ROI defined");
@@ -212,17 +218,18 @@ void KinectProjector::updateStatusGUI()
 		StatusGUI->getLabel("Baseplane Status")->setLabelColor(ofColor(255, 0, 0));
 	}
 
-	if (projKinectCalibrated)
+	if (projRs2Calibrated)
 	{
-		StatusGUI->getLabel("Calibration Status")->setLabel("Projector/Kinect calibrated");
+		StatusGUI->getLabel("Calibration Status")->setLabel("Projector/Rs2 calibrated");
 		StatusGUI->getLabel("Calibration Status")->setLabelColor(ofColor(0, 255, 0));
 	}
 	else
 	{
-		StatusGUI->getLabel("Calibration Status")->setLabel("Projector/Kinect not calibrated");
+		StatusGUI->getLabel("Calibration Status")->setLabel("Projector/Rs2 not calibrated");
 		StatusGUI->getLabel("Calibration Status")->setLabelColor(ofColor(255, 0, 0));
 	}
-
+    
+    StatusGUI->getLabel("Calibration Error Count")->setLabel("Calibration Error count : " + std::to_string((int)errorcounts));
 	StatusGUI->getLabel("Projector Status")->setLabel("Projector " + ofToString(projRes.x) + " x " + ofToString(projRes.y));
 
 	std::string AppStatus = "Setup";
@@ -243,32 +250,33 @@ void KinectProjector::updateStatusGUI()
 	gui->getToggle("Full Frame Filtering")->setChecked(doFullFrameFiltering);
 }
 
-void KinectProjector::update()
+void Rs2Projector::update()
 {
+    updateStatusGUI();
     // Clear updated state variables
     basePlaneUpdated = false;
-//    ROIUpdated = false;
-    projKinectCalibrationUpdated = false;
+    projRs2CalibrationUpdated = false;
 
-	// Try to open the kinect every 3. second if it is not yet open
+	// Try to open the rs2 every 3. second if it is not yet open
 	float TimeStamp = ofGetElapsedTimef();
-	if (!kinectOpened && TimeStamp-lastKinectOpenTry > 3)
+	if (!rs2Opened && TimeStamp-lastRs2OpenTry > 3)
 	{
-		lastKinectOpenTry = TimeStamp;
-		kinectOpened = kinectgrabber.openKinect();
+		lastRs2OpenTry = TimeStamp;
+		rs2Opened = rs2grabber.openRs2();
 
-		if (kinectOpened)
+		if (rs2Opened)
 		{
-			ofLogVerbose("KinectProjector") << "KinectProjector.update(): A Kinect was found ";
-			kinectRes = kinectgrabber.getKinectSize();
-			kinectROI = ofRectangle(0, 0, kinectRes.x, kinectRes.y);
-			ofLogVerbose("KinectProjector") << "KinectProjector.update(): kinectROI " << kinectROI;
+			ofLogVerbose("Rs2Projector") << "Rs2Projector.update(): A Rs2 was found ";
+			rs2Res = rs2grabber.getRs2Size();
+			rs2ROI = ofRectangle(0, 0, rs2Res.x, rs2Res.y);
+			ofLogVerbose("Rs2Projector") << "Rs2Projector.update(): rs2ROI " << rs2ROI;
 
-			kinectgrabber.setupFramefilter(gradFieldResolution, maxOffset, kinectROI, spatialFiltering, followBigChanges, numAveragingSlots);
-			kinectWorldMatrix = kinectgrabber.getWorldMatrix();
-			ofLogVerbose("KinectProjector") << "KinectProjector.update(): kinectWorldMatrix: " << kinectWorldMatrix;
-
-			updateStatusGUI();
+			rs2grabber.setupFramefilter(gradFieldResolution, maxOffset, rs2ROI, spatialFiltering, followBigChanges, numAveragingSlots);
+			rs2WorldMatrix = rs2grabber.getWorldMatrix();
+			ofLogVerbose("Rs2Projector") << "Rs2Projector.update(): rs2WorldMatrix: " << rs2WorldMatrix;
+            
+            
+			
 		}
 	}
 
@@ -278,38 +286,38 @@ void KinectProjector::update()
 		StatusGUI->update();
 	}
 
-    // Get images from kinect grabber
+    // Get images from rs2 grabber
     ofFloatPixels filteredframe;
-    if (kinectOpened && kinectgrabber.filtered.tryReceive(filteredframe)) 
+    if (rs2Opened && rs2grabber.filtered.tryReceive(filteredframe))
 	{
-		fpsKinect.newFrame();
-		fpsKinectText->setText(ofToString(fpsKinect.getFps(), 2));
+		fpsRs2.newFrame();
+		fpsRs2Text->setText(ofToString(fpsRs2.getFps(), 2));
 
-		FilteredDepthImage.setFromPixels(filteredframe.getData(), kinectRes.x, kinectRes.y);
+		FilteredDepthImage.setFromPixels(filteredframe.getData(), rs2Res.x, rs2Res.y);
         FilteredDepthImage.updateTexture();
         
-        // Get color image from kinect grabber
+        // Get color image from rs2 grabber
         ofPixels coloredframe;
-        if (kinectgrabber.colored.tryReceive(coloredframe)) 
+        if (rs2grabber.colored.tryReceive(coloredframe))
 		{
-            kinectColorImage.setFromPixels(coloredframe);
+            rs2ColorImage.setFromPixels(coloredframe);
 		
 			if (TemporalFilteringType == 0)
-				TemporalFrameFilter.NewFrame(kinectColorImage.getPixels().getData(), kinectColorImage.width, kinectColorImage.height);
+				TemporalFrameFilter.NewFrame(rs2ColorImage.getPixels().getData(), rs2ColorImage.width, rs2ColorImage.height);
 			else if (TemporalFilteringType == 1)
-				TemporalFrameFilter.NewColFrame(kinectColorImage.getPixels().getData(), kinectColorImage.width, kinectColorImage.height);
+				TemporalFrameFilter.NewColFrame(rs2ColorImage.getPixels().getData(), rs2ColorImage.width, rs2ColorImage.height);
 		}
 
-        // Get gradient field from kinect grabber
-        kinectgrabber.gradient.tryReceive(gradField);
+        // Get gradient field from rs2 grabber
+        rs2grabber.gradient.tryReceive(gradField);
         
         // Update grabber stored frame number
-        kinectgrabber.lock();
-        kinectgrabber.decStoredframes();
-        kinectgrabber.unlock();
+        rs2grabber.lock();
+        rs2grabber.decStoredframes();
+        rs2grabber.unlock();
         
         // Is the depth image stabilized
-        imageStabilized = kinectgrabber.isImageStabilized();
+        imageStabilized = rs2grabber.isImageStabilized();
         
         // Are we calibrating ?
         if (applicationState == APPLICATION_STATE_CALIBRATING && !waitingForFlattenSand) 
@@ -318,14 +326,13 @@ void KinectProjector::update()
         } 
 		else 
 		{
-			//ofEnableAlphaBlending();
 			fboMainWindow.begin();
-            if (drawKinectView || drawKinectColorView)
+            if (drawRs2View || drawRs2ColorView)
 			{
-				if (drawKinectColorView)
+				if (drawRs2ColorView)
 				{
-					kinectColorImage.updateTexture();
-					kinectColorImage.draw(0, 0);
+					rs2ColorImage.updateTexture();
+					rs2ColorImage.draw(0, 0);
 				}
 				else
 				{
@@ -336,11 +343,11 @@ void KinectProjector::update()
 				if (ROIcalibrated)
 				{
 					ofSetColor(0, 0, 255);
-					ofDrawRectangle(kinectROI);
+					ofDrawRectangle(rs2ROI);
 				}
 
 				ofSetColor(255, 0, 0);
-				ofDrawRectangle(1, 1, kinectRes.x-1, kinectRes.y-1);
+				ofDrawRectangle(1, 1, rs2Res.x-1, rs2Res.y-1);
 		
 				if (calibrationState == CALIBRATION_STATE_ROI_MANUAL_DETERMINATION && ROICalibState == ROI_CALIBRATION_STATE_INIT)
 				{
@@ -371,14 +378,14 @@ void KinectProjector::update()
 	{
 		ofClear(255, 255, 255, 0);
 	}
-	if (doShowROIonProjector && ROIcalibrated && kinectOpened)
+	if (doShowROIonProjector && ROIcalibrated && rs2Opened)
 	{
 		ofNoFill();
 		ofSetLineWidth(4);
 
 		// Draw rectangle of ROI using the offset by the current sand level
-		ofVec2f UL = kinectCoordToProjCoord(kinectROI.getMinX(), kinectROI.getMinY());
-		ofVec2f LR = kinectCoordToProjCoord(kinectROI.getMaxX()-1, kinectROI.getMaxY()-1);
+		ofVec2f UL = rs2CoordToProjCoord(rs2ROI.getMinX(), rs2ROI.getMinY());
+		ofVec2f LR = rs2CoordToProjCoord(rs2ROI.getMaxX()-1, rs2ROI.getMaxY()-1);
 
 		ofSetColor(255, 0, 0);
 		ofRectangle tempRect(ofPoint(UL.x, UL.y), ofPoint(LR.x, LR.y));
@@ -387,10 +394,11 @@ void KinectProjector::update()
 		ofSetColor(0, 0, 255);
 		ofRectangle tempRect2(ofPoint(UL.x - 2, UL.y - 2), ofPoint(UL.x + 2, UL.y + 2));
 		ofDrawRectangle(tempRect2);
+        basePlaneOffset.z = (int)basePlaneOffset.z;
 
 		// Draw rectangle of ROI using the offset by the waterlevel
-		UL = kinectCoordToProjCoord(kinectROI.getMinX(), kinectROI.getMinY(), basePlaneOffset.z);
-		LR = kinectCoordToProjCoord(kinectROI.getMaxX(), kinectROI.getMaxY(), basePlaneOffset.z);
+		UL = rs2CoordToProjCoord(rs2ROI.getMinX(), rs2ROI.getMinY(), basePlaneOffset.z);
+		LR = rs2CoordToProjCoord(rs2ROI.getMaxX(), rs2ROI.getMaxY(), basePlaneOffset.z);
 
 		ofSetColor(0, 255, 0);
 		tempRect = ofRectangle(ofPoint(UL.x, UL.y), ofPoint(LR.x, LR.y));
@@ -407,7 +415,7 @@ void KinectProjector::update()
 	fboProjWindow.end();
 }
 
-void KinectProjector::mousePressed(int x, int y, int button)
+void Rs2Projector::mousePressed(int x, int y, int button)
 {
 	if (calibrationState == CALIBRATION_STATE_ROI_MANUAL_DETERMINATION && ROICalibState == ROI_CALIBRATION_STATE_INIT)
 	{
@@ -416,28 +424,28 @@ void KinectProjector::mousePressed(int x, int y, int button)
 		ROICurrentPoint.x = x;
 		ROICurrentPoint.y = y;
 	}
-	else if (kinectOpened && drawKinectView)
+	else if (rs2Opened && drawRs2View)
 	{
-		int ind = y * kinectRes.x + x;
+		int ind = y * rs2Res.x + x;
 		if (ind >= 0 && ind < FilteredDepthImage.getFloatPixelsRef().getTotalBytes())
 		{
 			float z = FilteredDepthImage.getFloatPixelsRef().getData()[ind];
-			std::cout << "Kinect depth (x, y, z) = (" << x << ", " << y << ", " << z << ")" << std::endl;
+			std::cout << "Rs2 depth (x, y, z) = (" << x << ", " << y << ", " << z << ")" << std::endl;
 		}
 	}
 }
 
 
-void KinectProjector::mouseReleased(int x, int y, int button)
+void Rs2Projector::mouseReleased(int x, int y, int button)
 {
 	if (calibrationState == CALIBRATION_STATE_ROI_MANUAL_DETERMINATION && ROICalibState == ROI_CALIBRATION_STATE_INIT)
 	{
 		if (ROIStartPoint.x >= 0)
 		{
 			x = std::max(0, x);
-			x = std::min((int)kinectRes.x - 1, x);
+			x = std::min((int)rs2Res.x - 1, x);
 			y = std::max(0, y);
-			y = std::min((int)kinectRes.y - 1, y);
+			y = std::min((int)rs2Res.y - 1, y);
 
 			ROICurrentPoint.x = x;
 			ROICurrentPoint.y = y;
@@ -448,8 +456,8 @@ void KinectProjector::mouseReleased(int x, int y, int button)
 			int ymax = std::max((int)ROIStartPoint.y, (int)ROICurrentPoint.y);
 
 			ofRectangle tempRect(xmin, ymin, xmax - xmin, ymax - ymin);
-			kinectROI = tempRect;
-			setNewKinectROI();
+			rs2ROI = tempRect;
+			setNewRs2ROI();
 			ROICalibState = ROI_CALIBRATION_STATE_DONE;
 			calibrationText = "Manual ROI defined";
 			updateStatusGUI();
@@ -457,27 +465,27 @@ void KinectProjector::mouseReleased(int x, int y, int button)
 	}
 }
 
-void KinectProjector::mouseDragged(int x, int y, int button)
+void Rs2Projector::mouseDragged(int x, int y, int button)
 {
 	if (calibrationState == CALIBRATION_STATE_ROI_MANUAL_DETERMINATION && ROICalibState == ROI_CALIBRATION_STATE_INIT)
 	{
 		x = std::max(0, x);
-		x = std::min((int)kinectRes.x-1, x);
+		x = std::min((int)rs2Res.x-1, x);
 		y = std::max(0, y);
-		y = std::min((int)kinectRes.y - 1, y);
+		y = std::min((int)rs2Res.y - 1, y);
 
 		ROICurrentPoint.x = x;
 		ROICurrentPoint.y = y;
 	}
 }
 
-bool KinectProjector::getProjectionFlipped()
+bool Rs2Projector::getProjectionFlipped()
 {
-	return (kinectProjMatrix(0, 0) < 0);
+	return (rs2ProjMatrix(0, 0) < 0);
 }
 
 
-void KinectProjector::updateCalibration()
+void Rs2Projector::updateCalibration()
 {
     if (calibrationState == CALIBRATION_STATE_FULL_AUTO_CALIBRATION)
 	{
@@ -485,22 +493,17 @@ void KinectProjector::updateCalibration()
     } else if (calibrationState == CALIBRATION_STATE_ROI_AUTO_DETERMINATION){
         updateROIAutoCalibration();
     }
-	//else if (calibrationState == CALIBRATION_STATE_ROI_MANUAL_DETERMINATION)
-	//{
- //       updateROIManualCalibration();
- //   } 
-	else if (calibrationState == CALIBRATION_STATE_PROJ_KINECT_AUTO_CALIBRATION){
-        updateProjKinectAutoCalibration();
-    }else if (calibrationState == CALIBRATION_STATE_PROJ_KINECT_MANUAL_CALIBRATION) {
-        updateProjKinectManualCalibration();
+	else if (calibrationState == CALIBRATION_STATE_PROJ_RS2_AUTO_CALIBRATION){
+        updateProjRs2AutoCalibration();
+    }else if (calibrationState == CALIBRATION_STATE_PROJ_RS2_MANUAL_CALIBRATION) {
+        updateProjRs2ManualCalibration();
     }
 }
 
-void KinectProjector::updateFullAutoCalibration()
+void Rs2Projector::updateFullAutoCalibration()
 {
     if (fullCalibState == FULL_CALIBRATION_STATE_ROI_DETERMINATION)
 	{
-//        updateROIAutoCalibration();
 		updateROIFromFile();
         if (ROICalibState == ROI_CALIBRATION_STATE_DONE) 
 		{
@@ -510,7 +513,7 @@ void KinectProjector::updateFullAutoCalibration()
     } 
 	else if (fullCalibState == FULL_CALIBRATION_STATE_AUTOCALIB)
 	{
-        updateProjKinectAutoCalibration();
+        updateProjRs2AutoCalibration();
         if (autoCalibState == AUTOCALIB_STATE_DONE)
 		{
             fullCalibState = FULL_CALIBRATION_STATE_DONE;
@@ -518,53 +521,52 @@ void KinectProjector::updateFullAutoCalibration()
     }
 }
 
-void KinectProjector::updateROIAutoCalibration()
+void Rs2Projector::updateROIAutoCalibration()
 {
-    //updateROIFromColorImage();
     updateROIFromDepthImage();
 }
 
-void KinectProjector::updateROIFromCalibration()
+void Rs2Projector::updateROIFromCalibration()
 {
-	ofVec2f a = worldCoordTokinectCoord(projCoordAndWorldZToWorldCoord(0, 0, basePlaneOffset.z));
-	ofVec2f b = worldCoordTokinectCoord(projCoordAndWorldZToWorldCoord(projRes.x, 0, basePlaneOffset.z));
-	ofVec2f c = worldCoordTokinectCoord(projCoordAndWorldZToWorldCoord(projRes.x, projRes.y, basePlaneOffset.z));
-	ofVec2f d = worldCoordTokinectCoord(projCoordAndWorldZToWorldCoord(0, projRes.y, basePlaneOffset.z));
+	ofVec2f a = worldCoordTors2Coord(projCoordAndWorldZToWorldCoord(0, 0, basePlaneOffset.z));
+	ofVec2f b = worldCoordTors2Coord(projCoordAndWorldZToWorldCoord(projRes.x, 0, basePlaneOffset.z));
+	ofVec2f c = worldCoordTors2Coord(projCoordAndWorldZToWorldCoord(projRes.x, projRes.y, basePlaneOffset.z));
+	ofVec2f d = worldCoordTors2Coord(projCoordAndWorldZToWorldCoord(0, projRes.y, basePlaneOffset.z));
 	float x1 = max(a.x, d.x);
 	float x2 = min(b.x, c.x);
 	float y1 = max(a.y, b.y);
 	float y2 = min(c.y, d.y);
-	ofRectangle smallKinectROI = ofRectangle(ofPoint(max(x1, kinectROI.getLeft()), max(y1, kinectROI.getTop())), ofPoint(min(x2, kinectROI.getRight()), min(y2, kinectROI.getBottom())));
-	kinectROI = smallKinectROI;
+	ofRectangle smallRs2ROI = ofRectangle(ofPoint(max(x1, rs2ROI.getLeft()), max(y1, rs2ROI.getTop())), ofPoint(min(x2, rs2ROI.getRight()), min(y2, rs2ROI.getBottom())));
+	rs2ROI = smallRs2ROI;
 
-	kinectROI.standardize();
-	ofLogVerbose("KinectProjector") << "updateROIFromCalibration(): final kinectROI : " << kinectROI;
-	setNewKinectROI();
+	rs2ROI.standardize();
+	ofLogVerbose("Rs2Projector") << "updateROIFromCalibration(): final rs2ROI : " << rs2ROI;
+	setNewRs2ROI();
 }
 
 //TODO: update color image ROI acquisition to use calibration modal
-void KinectProjector::updateROIFromColorImage()
+void Rs2Projector::updateROIFromColorImage()
 {
     fboProjWindow.begin();
     ofBackground(255);
     fboProjWindow.end();
-    if (ROICalibState == ROI_CALIBRATION_STATE_INIT) { // set kinect to max depth range
+    if (ROICalibState == ROI_CALIBRATION_STATE_INIT) { // set rs2 to max depth range
         ROICalibState = ROI_CALIBRATION_STATE_MOVE_UP;
         large = ofPolyline();
         threshold = 90;
         
     } else if (ROICalibState == ROI_CALIBRATION_STATE_MOVE_UP) {
         while (threshold < 255){
-            kinectColorImage.setROI(0, 0, kinectRes.x, kinectRes.y);
-            thresholdedImage = kinectColorImage;
+            rs2ColorImage.setROI(0, 0, rs2Res.x, rs2Res.y);
+            thresholdedImage = rs2ColorImage;
             cvThreshold(thresholdedImage.getCvImage(), thresholdedImage.getCvImage(), threshold, 255, CV_THRESH_BINARY_INV);
-            contourFinder.findContours(thresholdedImage, 12, kinectRes.x*kinectRes.y, 5, true);
+            contourFinder.findContours(thresholdedImage, 12, rs2Res.x*rs2Res.y, 5, true);
             ofPolyline small = ofPolyline();
             for (int i = 0; i < contourFinder.nBlobs; i++) {
                 ofxCvBlob blobContour = contourFinder.blobs[i];
                 if (blobContour.hole) {
                     ofPolyline poly = ofPolyline(blobContour.pts);
-                    if (poly.inside(kinectRes.x/2, kinectRes.y/2))
+                    if (poly.inside(rs2Res.x/2, rs2Res.y/2))
                     {
                         if (small.size() == 0 || poly.getArea() < small.getArea()) {
                             small = poly;
@@ -572,55 +574,54 @@ void KinectProjector::updateROIFromColorImage()
                     }
                 }
             }
-            ofLogVerbose("KinectProjector") << "KinectProjector.updateROIFromColorImage(): small.getArea(): " << small.getArea() ;
-            ofLogVerbose("KinectProjector") << "KinectProjector.updateROIFromColorImage(): large.getArea(): " << large.getArea() ;
+            ofLogVerbose("Rs2Projector") << "Rs2Projector.updateROIFromColorImage(): small.getArea(): " << small.getArea() ;
+            ofLogVerbose("Rs2Projector") << "Rs2Projector.updateROIFromColorImage(): large.getArea(): " << large.getArea() ;
             if (large.getArea() < small.getArea())
             {
-                ofLogVerbose("KinectProjector") << "updateROIFromColorImage(): We take the largest contour line surroundings the center of the screen at all threshold level" ;
+                ofLogVerbose("Rs2Projector") << "updateROIFromColorImage(): We take the largest contour line surroundings the center of the screen at all threshold level" ;
                 large = small;
             }
             threshold+=1;
         }
-        kinectROI = large.getBoundingBox();
-        kinectROI.standardize();
-        ofLogVerbose("KinectProjector") << "updateROIFromColorImage(): kinectROI : " << kinectROI ;
+        rs2ROI = large.getBoundingBox();
+        rs2ROI.standardize();
+        ofLogVerbose("Rs2Projector") << "updateROIFromColorImage(): rs2ROI : " << rs2ROI ;
         ROICalibState = ROI_CALIBRATION_STATE_DONE;
-        setNewKinectROI();
+        setNewRs2ROI();
     } else if (ROICalibState == ROI_CALIBRATION_STATE_DONE){
     }
 }
 
-void KinectProjector::updateROIFromDepthImage(){
+void Rs2Projector::updateROIFromDepthImage(){
 	int counter = 0;
     if (ROICalibState == ROI_CALIBRATION_STATE_INIT) {
         calibModal->setMessage("Enlarging acquisition area & resetting buffers.");
-        setMaxKinectGrabberROI();
+        setMaxRs2GrabberROI();
         calibModal->setMessage("Stabilizing acquisition.");
         ROICalibState = ROI_CALIBRATION_STATE_READY_TO_MOVE_UP;
     } else if (ROICalibState == ROI_CALIBRATION_STATE_READY_TO_MOVE_UP && imageStabilized) {
         calibModal->setMessage("Scanning depth field to find sandbox walls.");
-        ofLogVerbose("KinectProjector") << "updateROIFromDepthImage(): ROI_CALIBRATION_STATE_READY_TO_MOVE_UP: got a stable depth image" ;
+        ofLogVerbose("Rs2Projector") << "updateROIFromDepthImage(): ROI_CALIBRATION_STATE_READY_TO_MOVE_UP: got a stable depth image" ;
         ROICalibState = ROI_CALIBRATION_STATE_MOVE_UP;
         large = ofPolyline();
         ofxCvFloatImage temp;
-        temp.setFromPixels(FilteredDepthImage.getFloatPixelsRef().getData(), kinectRes.x, kinectRes.y);
+        temp.setFromPixels(FilteredDepthImage.getFloatPixelsRef().getData(), rs2Res.x, rs2Res.y);
         temp.setNativeScale(FilteredDepthImage.getNativeScaleMin(), FilteredDepthImage.getNativeScaleMax());
         temp.convertToRange(0, 1);
         thresholdedImage.setFromPixels(temp.getFloatPixelsRef());
-        threshold = 0; // We go from the higher distance to the kinect (lower position) to the lower distance
+        threshold = 0; // We go from the higher distance to the rs2 (lower position) to the lower distance
     } else if (ROICalibState == ROI_CALIBRATION_STATE_MOVE_UP) {
-	ofLogVerbose("KinectProjector") << "updateROIFromDepthImage(): ROI_CALIBRATION_STATE_MOVE_UP";
+	ofLogVerbose("Rs2Projector") << "updateROIFromDepthImage(): ROI_CALIBRATION_STATE_MOVE_UP";
 		while (threshold < 255){
             cvThreshold(thresholdedImage.getCvImage(), thresholdedImage.getCvImage(), 255-threshold, 255, CV_THRESH_TOZERO_INV);
             thresholdedImage.updateTexture();
-//			SaveDepthDebugImageNative(thresholdedImage, counter++);
-            contourFinder.findContours(thresholdedImage, 12, kinectRes.x*kinectRes.y, 5, true, false);
+            contourFinder.findContours(thresholdedImage, 12, rs2Res.x*rs2Res.y, 5, true, false);
             ofPolyline small = ofPolyline();
             for (int i = 0; i < contourFinder.nBlobs; i++) {
                 ofxCvBlob blobContour = contourFinder.blobs[i];
                 if (blobContour.hole) {
                     ofPolyline poly = ofPolyline(blobContour.pts);
-                    if (poly.inside(kinectRes.x/2, kinectRes.y/2))
+                    if (poly.inside(rs2Res.x/2, rs2Res.y/2))
                     {
                         if (small.size() == 0 || poly.getArea() < small.getArea()) {
                             small = poly;
@@ -630,32 +631,29 @@ void KinectProjector::updateROIFromDepthImage(){
             }
             if (large.getArea() < small.getArea())
             {
-                ofLogVerbose("KinectProjector") << "updateROIFromDepthImage(): updating ROI" ;
+                ofLogVerbose("Rs2Projector") << "updateROIFromDepthImage(): updating ROI" ;
                 large = small;
             }
             threshold+=1;
         }
         if (large.getArea() == 0)
         {
-			ofLogVerbose("KinectProjector") << "Calibration failed: The sandbox walls could not be found";
+			ofLogVerbose("Rs2Projector") << "Calibration failed: The sandbox walls could not be found";
             calibModal->hide();
             confirmModal->setTitle("Calibration failed");
             confirmModal->setMessage("The sandbox walls could not be found.");
             confirmModal->show();
-//            calibrating = false;
 			applicationState = APPLICATION_STATE_SETUP;
 			updateStatusGUI();
         } else {
-            kinectROI = large.getBoundingBox();
-//            insideROIPoly = large.getResampledBySpacing(10);
-            kinectROI.standardize();
+            rs2ROI = large.getBoundingBox();
+            rs2ROI.standardize();
             calibModal->setMessage("Sand area successfully detected");
-            ofLogVerbose("KinectProjector") << "updateROIFromDepthImage(): final kinectROI : " << kinectROI ;
-            setNewKinectROI();
+            ofLogVerbose("Rs2Projector") << "updateROIFromDepthImage(): final rs2ROI : " << rs2ROI ;
+            setNewRs2ROI();
             if (calibrationState == CALIBRATION_STATE_ROI_AUTO_DETERMINATION)
 			{
 				applicationState = APPLICATION_STATE_SETUP;
-			//                calibrating = false;
                 calibModal->hide();
 				updateStatusGUI();
             }
@@ -665,58 +663,55 @@ void KinectProjector::updateROIFromDepthImage(){
     }
 }
 
-void KinectProjector::updateROIFromFile()
+void Rs2Projector::updateROIFromFile()
 {
-	string settingsFile = "settings/kinectProjectorSettings.xml";
+	string settingsFile = "settings/rs2ProjectorSettings.xml";
 
 	ofXml xml;
 	if (xml.load(settingsFile))
 	{
-		xml.setTo("KINECTSETTINGS");
-		kinectROI = xml.getValue<ofRectangle>("kinectROI");
-		setNewKinectROI();
+		xml.setTo("RS2SETTINGS");
+		rs2ROI = xml.getValue<ofRectangle>("rs2ROI");
+		setNewRs2ROI();
 		ROICalibState = ROI_CALIBRATION_STATE_DONE;
 		return;
 	}
-	ofLogVerbose("KinectProjector") << "updateROIFromFile(): could not read settings/kinectProjectorSettings.xml";
+	ofLogVerbose("Rs2Projector") << "updateROIFromFile(): could not read settings/rs2ProjectorSettings.xml";
 	applicationState = APPLICATION_STATE_SETUP;
 	updateStatusGUI();
 }
 
-void KinectProjector::setMaxKinectGrabberROI(){
-    updateKinectGrabberROI(ofRectangle(0, 0, kinectRes.x, kinectRes.y));
+void Rs2Projector::setMaxRs2GrabberROI(){
+    updateRs2GrabberROI(ofRectangle(0, 0, rs2Res.x, rs2Res.y));
 }
 
-void KinectProjector::setNewKinectROI()
+void Rs2Projector::setNewRs2ROI()
 {
-	CheckAndNormalizeKinectROI();
+	CheckAndNormalizeRs2ROI();
 
     // Cast to integer values
-    kinectROI.x = static_cast<int>(kinectROI.x);
-    kinectROI.y = static_cast<int>(kinectROI.y);
-    kinectROI.width = static_cast<int>(kinectROI.width);
-    kinectROI.height = static_cast<int>(kinectROI.height);
+    rs2ROI.x = static_cast<int>(rs2ROI.x);
+    rs2ROI.y = static_cast<int>(rs2ROI.y);
+    rs2ROI.width = static_cast<int>(rs2ROI.width);
+    rs2ROI.height = static_cast<int>(rs2ROI.height);
     
-	ofLogVerbose("KinectProjector") << "setNewKinectROI : " << kinectROI;
+	ofLogVerbose("Rs2Projector") << "setNewRs2ROI : " << rs2ROI;
 
     // Update states variables
     ROIcalibrated = true;
-//    ROIUpdated = true;
     saveCalibrationAndSettings();
-    updateKinectGrabberROI(kinectROI);
+    updateRs2GrabberROI(rs2ROI);
 	updateStatusGUI();
 }
 
-void KinectProjector::updateKinectGrabberROI(ofRectangle ROI){
-    kinectgrabber.performInThread([ROI](KinectGrabber & kg) {
-        kg.setKinectROI(ROI);
+void Rs2Projector::updateRs2GrabberROI(ofRectangle ROI){
+    rs2grabber.performInThread([ROI](Rs2Grabber & kg) {
+        kg.setRs2ROI(ROI);
     });
-//    while (kinectgrabber.isImageStabilized()){
-//    } // Wait for kinectgrabber to reset buffers
     imageStabilized = false; // Now we can wait for a clean new depth frame
 }
 
-std::string KinectProjector::GetTimeAndDateString()
+std::string Rs2Projector::GetTimeAndDateString()
 {
 	time_t t = time(0);   // get time now
 	struct tm * now = localtime(&t);
@@ -734,16 +729,16 @@ std::string KinectProjector::GetTimeAndDateString()
 
 
 
-bool KinectProjector::savePointPair()
+bool Rs2Projector::savePointPair()
 {
-	std::string ppK = ofToDataPath(DebugFileOutDir + "CalibrationPointPairsKinect.txt");
-	std::string ppP = ofToDataPath(DebugFileOutDir + "CalibrationPointPairsKinect.txt");
+	std::string ppK = ofToDataPath(DebugFileOutDir + "CalibrationPointPairsRs2.txt");
+	std::string ppP = ofToDataPath(DebugFileOutDir + "CalibrationPointPairsRs2.txt");
 	std::ofstream ppKo(ppK);
 	std::ofstream ppPo(ppP);
 
-	for (int i = 0; i < pairsKinect.size(); i++)
+	for (int i = 0; i < pairsRs2.size(); i++)
 	{
-		ppKo << pairsKinect[i].x << " " << pairsKinect[i].y << " " << pairsKinect[i].z << " " << i <<  std::endl;
+		ppKo << pairsRs2[i].x << " " << pairsRs2[i].y << " " << pairsRs2[i].z << " " << i <<  std::endl;
 	}
 
 	for (int i = 0; i < pairsProjector.size(); i++)
@@ -754,11 +749,11 @@ bool KinectProjector::savePointPair()
 }
 
 
-void KinectProjector::updateProjKinectAutoCalibration()
+void Rs2Projector::updateProjRs2AutoCalibration()
 {
     if (autoCalibState == AUTOCALIB_STATE_INIT_FIRST_PLANE)
 	{
-        kinectgrabber.performInThread([](KinectGrabber & kg) {
+        rs2grabber.performInThread([](Rs2Grabber & kg) {
             kg.setMaxOffset(0);
         });
 		calibrationText = "Stabilizing acquisition";
@@ -780,7 +775,7 @@ void KinectProjector::updateProjKinectAutoCalibration()
 		calibrationText = "Sea level plane estimated";
 		updateStatusGUI();
 
-        autoCalibPts = new ofPoint[10];
+        autoCalibPts = new ofPoint[15];
 		float cs = 4 * chessboardSize / 3; 
 		float css = 3 * chessboardSize / 4;
         ofPoint sc = ofPoint(projRes.x/2,projRes.y/2);
@@ -795,10 +790,15 @@ void KinectProjector::updateProjKinectAutoCalibration()
         autoCalibPts[3] = ofPoint(          cs, projRes.y-cs) - sc; // Lower left
         autoCalibPts[4] = ofPoint(          cs,           cs)  -sc; // upper left 
         autoCalibPts[5] = ofPoint(0         ,0);                    // Center
-        autoCalibPts[6] = ofPoint(projRes.x-css,         css) - sc; // upper right
-        autoCalibPts[7] = ofPoint(projRes.x-css,projRes.y-css) -sc; // Lower right
-        autoCalibPts[8] = ofPoint(css          ,projRes.y-css) -sc; // Lower left
-        autoCalibPts[9] = ofPoint(css,                    css) - sc; // upper left 
+        autoCalibPts[6] = ofPoint(projRes.x-cs,           cs) - sc; // upper right
+        autoCalibPts[7] = ofPoint(projRes.x-cs, projRes.y-cs) - sc; // Lower right
+        autoCalibPts[8] = ofPoint(          cs, projRes.y-cs) - sc; // Lower left
+        autoCalibPts[9] = ofPoint(          cs,           cs)  -sc; // upper left
+        autoCalibPts[10] = ofPoint(0         ,0);                    // Center
+        autoCalibPts[11] = ofPoint(projRes.x-css,         css) - sc; // upper right
+        autoCalibPts[12] = ofPoint(projRes.x-css,projRes.y-css) -sc; // Lower right
+        autoCalibPts[13] = ofPoint(css          ,projRes.y-css) -sc; // Lower left
+        autoCalibPts[14] = ofPoint(css,                    css) - sc; // upper left
 
 		currentCalibPts = 0;
         upframe = false;
@@ -813,7 +813,7 @@ void KinectProjector::updateProjKinectAutoCalibration()
 	else if (autoCalibState == AUTOCALIB_STATE_NEXT_POINT && imageStabilized)
 	{
 		if (!(TemporalFrameCounter % 20))
-			ofLogVerbose("KinectProjector") << "autoCalib(): Got frame " + ofToString(TemporalFrameCounter) + " / " + ofToString(TemporalFrameFilter.getBufferSize() + 3) + " for temporal filter";
+			ofLogVerbose("Rs2Projector") << "autoCalib(): Got frame " + ofToString(TemporalFrameCounter) + " / " + ofToString(TemporalFrameFilter.getBufferSize() + 3) + " for temporal filter";
 
 		// We want to have a buffer of images that are only focusing on one chess pattern
 		if (TemporalFrameCounter++ > TemporalFrameFilter.getBufferSize() + 3)
@@ -824,50 +824,50 @@ void KinectProjector::updateProjKinectAutoCalibration()
 	}
 	else if (autoCalibState == AUTOCALIB_STATE_COMPUTE) 
 	{
-        updateKinectGrabberROI(kinectROI); // Goes back to kinectROI and maxoffset
-        kinectgrabber.performInThread([this](KinectGrabber & kg) {
+        updateRs2GrabberROI(rs2ROI); // Goes back to rs2ROI and maxoffset
+        rs2grabber.performInThread([this](Rs2Grabber & kg) {
             kg.setMaxOffset(this->maxOffset);
         });
-        if (pairsKinect.size() == 0) {
-            ofLogVerbose("KinectProjector") << "autoCalib(): Error: No points acquired !!" ;
+        if (pairsRs2.size() == 0) {
+            ofLogVerbose("Rs2Projector") << "autoCalib(): Error: No points acquired !!" ;
 			calibrationText = "Calibration failed: No points acquired";
 			applicationState = APPLICATION_STATE_SETUP;
 			updateStatusGUI();
         } 
 		else 
 		{
-            ofLogVerbose("KinectProjector") << "autoCalib(): Calibrating" ;
-            kpt->calibrate(pairsKinect, pairsProjector);
-            kinectProjMatrix = kpt->getProjectionMatrix();
+            ofLogVerbose("Rs2Projector") << "autoCalib(): Calibrating" ;
+            kpt->calibrate(pairsRs2, pairsProjector);
+            rs2ProjMatrix = kpt->getProjectionMatrix();
 
 			double ReprojectionError = ComputeReprojectionError(DumpDebugFiles);
-			ofLogVerbose("KinectProjector") << "autoCalib(): ReprojectionError " + ofToString(ReprojectionError);
+            errorcounts = ReprojectionError;
+			ofLogVerbose("Rs2Projector") << "autoCalib(): ReprojectionError " + ofToString(ReprojectionError);
 
 			if (ReprojectionError > 50)
 			{
-				ofLogVerbose("KinectProjector") << "autoCalib(): ReprojectionError too big. Something wrong with projection matrix";
-				projKinectCalibrated = false; 
-				projKinectCalibrationUpdated = false;
+				ofLogVerbose("Rs2Projector") << "autoCalib(): ReprojectionError too big. Something wrong with projection matrix";
+				projRs2Calibrated = false;
+				projRs2CalibrationUpdated = false;
 				applicationState = APPLICATION_STATE_SETUP;
 				calibrationText = "Calibration failed - reprojection error too big";
 				updateStatusGUI();
 				return;
 			}
+            init_FBOprojector();
 
 			// Rasmus update - I am not sure it is good to override the manual ROI
 			// updateROIFromCalibration(); // Compute the limite of the ROI according to the projected area 
-            projKinectCalibrated = true; // Update states variables
-            projKinectCalibrationUpdated = true;
+            projRs2Calibrated = true; // Update states variables
+            projRs2CalibrationUpdated = true;
 			applicationState = APPLICATION_STATE_SETUP;
 			calibrationText = "Calibration successful";
-
-			//saveCalibrationAndSettings(); // Already done in updateROIFromCalibration
 			if (kpt->saveCalibration("settings/calibration.xml"))
 			{
-				ofLogVerbose("KinectProjector") << "update(): initialisation: Calibration saved ";
+				ofLogVerbose("Rs2Projector") << "update(): initialisation: Calibration saved ";
 			}
 			else {
-				ofLogVerbose("KinectProjector") << "update(): initialisation: Calibration could not be saved ";
+				ofLogVerbose("Rs2Projector") << "update(): initialisation: Calibration could not be saved ";
 			}
 			updateStatusGUI();
         }
@@ -875,27 +875,27 @@ void KinectProjector::updateProjKinectAutoCalibration()
     }
 	else if (!imageStabilized)
 	{
-		ofLogVerbose("KinectProjector") << "updateProjKinectAutoCalibration(): image not stabilised";
+		ofLogVerbose("Rs2Projector") << "updateProjRs2AutoCalibration(): image not stabilised";
 	}
 	else if (autoCalibState == AUTOCALIB_STATE_DONE)
 	{
     }
 }
 
-// Compute the error when using the projection matrix to project calibration Kinect points into Project space
+// Compute the error when using the projection matrix to project calibration Rs2 points into Project space
 // and comparing with calibration projector points
-double KinectProjector::ComputeReprojectionError(bool WriteFile)
+double Rs2Projector::ComputeReprojectionError(bool WriteFile)
 {
 	std::string oErrors = ofToDataPath(DebugFileOutDir + "CalibrationReprojectionErrors_" + GetTimeAndDateString() + ".txt");
 
 	double PError = 0;
 
-	for (int i = 0; i < pairsKinect.size(); i++)
+	for (int i = 0; i < pairsRs2.size(); i++)
 	{
-		ofVec4f wc = pairsKinect[i];
+		ofVec4f wc = pairsRs2[i];
 		wc.w = 1;
 
-		ofVec4f screenPos = kinectProjMatrix*wc;
+		ofVec4f screenPos = rs2ProjMatrix*wc;
 		ofVec2f projectedPoint(screenPos.x / screenPos.z, screenPos.y / screenPos.z);
 		ofVec2f projP = pairsProjector[i];
 
@@ -903,18 +903,18 @@ double KinectProjector::ComputeReprojectionError(bool WriteFile)
 
 		PError += D;
 	}
-	PError /= (double)pairsKinect.size();
+	PError /= (double)pairsRs2.size();
 
 	if (WriteFile)
 	{
 		std::ofstream fost2(oErrors.c_str());
 
-		for (int i = 0; i < pairsKinect.size(); i++)
+		for (int i = 0; i < pairsRs2.size(); i++)
 		{
-			ofVec4f wc = pairsKinect[i];
+			ofVec4f wc = pairsRs2[i];
 			wc.w = 1;
 
-			ofVec4f screenPos = kinectProjMatrix*wc;
+			ofVec4f screenPos = rs2ProjMatrix*wc;
 			ofVec2f projectedPoint(screenPos.x / screenPos.z, screenPos.y / screenPos.z);
 			ofVec2f projP = pairsProjector[i];
 
@@ -928,9 +928,9 @@ double KinectProjector::ComputeReprojectionError(bool WriteFile)
 	return PError;
 }
 
-void KinectProjector::CalibrateNextPoint()
+void Rs2Projector::CalibrateNextPoint()
 {
-	if (currentCalibPts < 5 || (upframe && currentCalibPts < 10))
+	if (currentCalibPts < 5 || (upframe && currentCalibPts < 15))
 	{
 		if (!upframe)
 		{
@@ -939,18 +939,18 @@ void KinectProjector::CalibrateNextPoint()
 		}
 		else
 		{
-			calibrationText = "Calibration (high) #  " + std::to_string(currentCalibPts - 4) + "/5";
+			calibrationText = "Calibration (high) #  " + std::to_string(currentCalibPts - 4) + "/10";
 			updateStatusGUI();
 		}
 
 		// Current RGB frame - probably with rolling shutter problems
-		cvRgbImage = ofxCv::toCv(kinectColorImage.getPixels());
+		cvRgbImage = ofxCv::toCv(rs2ColorImage.getPixels());
 
 		ofxCvGrayscaleImage tempImage;
 		if (TemporalFilteringType == 0)
-			tempImage.setFromPixels(TemporalFrameFilter.getMedianFilteredImage(), kinectColorImage.width, kinectColorImage.height);
+			tempImage.setFromPixels(TemporalFrameFilter.getMedianFilteredImage(), rs2ColorImage.width, rs2ColorImage.height);
 		if (TemporalFilteringType == 1)
-			tempImage.setFromPixels(TemporalFrameFilter.getAverageFilteredColImage(), kinectColorImage.width, kinectColorImage.height);
+			tempImage.setFromPixels(TemporalFrameFilter.getAverageFilteredColImage(), rs2ColorImage.width, rs2ColorImage.height);
 		
 		ProcessChessBoardInput(tempImage);
 
@@ -962,14 +962,12 @@ void KinectProjector::CalibrateNextPoint()
 
 		cvGrayImage = ofxCv::toCv(tempImage.getPixels());
 
-		cv::Rect tempROI((int)kinectROI.x, (int)kinectROI.y,(int)kinectROI.width, (int)kinectROI.height);
+		cv::Rect tempROI((int)rs2ROI.x, (int)rs2ROI.y,(int)rs2ROI.width, (int)rs2ROI.height);
 		cv::Mat cvGrayROI = cvGrayImage(tempROI);
 
 		cv::Size patternSize = cv::Size(chessboardX - 1, chessboardY - 1);
-	//	int chessFlags = cv::CALIB_CB_ADAPTIVE_THRESH + cv::CALIB_CB_FAST_CHECK;
 		int chessFlags = 0;
 
-		//bool foundChessboard = findChessboardCorners(cvGrayImage, patternSize, cvPoints, chessFlags);
 		bool foundChessboard = findChessboardCorners(cvGrayROI, patternSize, cvPoints, chessFlags);
 
 		if (!foundChessboard)
@@ -989,21 +987,20 @@ void KinectProjector::CalibrateNextPoint()
 
 			cornerSubPix(cvGrayImage, cvPoints, cv::Size(2, 2), cv::Size(-1, -1),   // Rasmus: changed search size to 2 from 11 - since this caused false findings
 				cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 0.1));
-
 			drawChessboardCorners(cvRgbImage, patternSize, cv::Mat(cvPoints), foundChessboard);
 
 			if (DumpDebugFiles)
 			{
 				std::string tname = DebugFileOutDir + "FoundChessboard_" + GetTimeAndDateString() + "_" + ofToString(currentCalibPts) + "_try_" + ofToString(trials) + ".png";
-				ofSaveImage(kinectColorImage.getPixels(), tname);
+				ofSaveImage(rs2ColorImage.getPixels(), tname);
 			}
 
-			kinectColorImage.updateTexture();
+			rs2ColorImage.updateTexture();
 			fboMainWindow.begin();
-			kinectColorImage.draw(0, 0);
+			rs2ColorImage.draw(0, 0);
 			fboMainWindow.end();
 
-			ofLogVerbose("KinectProjector") << "autoCalib(): Chessboard found for point :" << currentCalibPts;
+			ofLogVerbose("Rs2Projector") << "autoCalib(): Chessboard found for point :" << currentCalibPts;
 			bool okchess = addPointPair();
 
 			if (okchess)
@@ -1017,12 +1014,12 @@ void KinectProjector::CalibrateNextPoint()
 			{
 				// We cannot get all depth points for the chessboard
 				trials++;
-				ofLogVerbose("KinectProjector") << "autoCalib(): Depth points of chessboard not allfound on trial : " << trials;
+				ofLogVerbose("Rs2Projector") << "autoCalib(): Depth points of chessboard not allfound on trial : " << trials;
 				if (trials > 3)
 				{
 					// Move the chessboard closer to the center of the screen
-					ofLogVerbose("KinectProjector") << "autoCalib(): Chessboard could not be found moving chessboard closer to center ";
-					autoCalibPts[currentCalibPts] = 4 * autoCalibPts[currentCalibPts] / 5;
+					ofLogVerbose("Rs2Projector") << "autoCalib(): Chessboard could not be found moving chessboard closer to center ";
+					autoCalibPts[currentCalibPts] = 3 * autoCalibPts[currentCalibPts] / 4;
 					ofPoint dispPt = ofPoint(projRes.x / 2, projRes.y / 2) + autoCalibPts[currentCalibPts]; // Compute next chessboard position
 					drawChessboard(dispPt.x, dispPt.y, chessboardSize); // We can now draw the next chess board
 					trials = 0;
@@ -1033,11 +1030,11 @@ void KinectProjector::CalibrateNextPoint()
 		{
 			// We cannot find the chessboard
 			trials++;
-			ofLogVerbose("KinectProjector") << "autoCalib(): Chessboard not found on trial : " << trials;
+			ofLogVerbose("Rs2Projector") << "autoCalib(): Chessboard not found on trial : " << trials;
 			if (trials > 3) 
 			{
 				// Move the chessboard closer to the center of the screen
-				ofLogVerbose("KinectProjector") << "autoCalib(): Chessboard could not be found moving chessboard closer to center ";
+				ofLogVerbose("Rs2Projector") << "autoCalib(): Chessboard could not be found moving chessboard closer to center ";
 				autoCalibPts[currentCalibPts] = 3 * autoCalibPts[currentCalibPts] / 4;
 
 				ofPoint dispPt = ofPoint(projRes.x / 2, projRes.y / 2) + autoCalibPts[currentCalibPts]; // Compute next chessboard position
@@ -1064,12 +1061,12 @@ void KinectProjector::CalibrateNextPoint()
 	}
 }
 
-//TODO: Add manual Prj Kinect calibration
-void KinectProjector::updateProjKinectManualCalibration(){
+//TODO: Add manual Prj Rs2 calibration
+void Rs2Projector::updateProjRs2ManualCalibration(){
     // Draw a Chessboard
     drawChessboard(ofGetMouseX(), ofGetMouseY(), chessboardSize);
-    // Try to find the chess board on the kinect color image
-    cvRgbImage = ofxCv::toCv(kinectColorImage.getPixels());
+    // Try to find the chess board on the rs2 color image
+    cvRgbImage = ofxCv::toCv(rs2ColorImage.getPixels());
     cv::Size patternSize = cv::Size(chessboardX-1, chessboardY-1);
     int chessFlags = cv::CALIB_CB_ADAPTIVE_THRESH + cv::CALIB_CB_FAST_CHECK;
     bool foundChessboard = findChessboardCorners(cvRgbImage, patternSize, cvPoints, chessFlags);
@@ -1082,37 +1079,37 @@ void KinectProjector::updateProjKinectManualCalibration(){
     }
 }
 
-void KinectProjector::updateBasePlane()
+void Rs2Projector::updateBasePlane()
 {
 	basePlaneComputed = false;
 	updateStatusGUI();
 
-    ofRectangle smallROI = kinectROI;
+    ofRectangle smallROI = rs2ROI;
     smallROI.scaleFromCenter(0.75); // Reduce ROI to avoid problems with borders
-    ofLogVerbose("KinectProjector") << "updateBasePlane(): smallROI: " << smallROI ;
+    ofLogVerbose("Rs2Projector") << "updateBasePlane(): smallROI: " << smallROI ;
     int sw = static_cast<int>(smallROI.width);
     int sh = static_cast<int>(smallROI.height);
     int sl = static_cast<int>(smallROI.getLeft());
     int st = static_cast<int>(smallROI.getTop());
-    ofLogVerbose("KinectProjector") << "updateBasePlane(): sw: " << sw << " sh : " << sh << " sl : " << sl << " st : " << st << " sw*sh : " << sw*sh ;
+    ofLogVerbose("Rs2Projector") << "updateBasePlane(): sw: " << sw << " sh : " << sh << " sl : " << sl << " st : " << st << " sw*sh : " << sw*sh ;
     if (sw*sh == 0) {
-        ofLogVerbose("KinectProjector") << "updateBasePlane(): smallROI is null, cannot compute base plane normal" ;
+        ofLogVerbose("Rs2Projector") << "updateBasePlane(): smallROI is null, cannot compute base plane normal" ;
         return;
     }
     ofVec4f pt;
     ofVec3f* points;
     points = new ofVec3f[sw*sh];
-    ofLogVerbose("KinectProjector") << "updateBasePlane(): Computing points in smallROI : " << sw*sh ;
+    ofLogVerbose("Rs2Projector") << "updateBasePlane(): Computing points in smallROI : " << sw*sh ;
     for (int x = 0; x<sw; x++){
         for (int y = 0; y<sh; y ++){
-            points[x+y*sw] = kinectCoordToWorldCoord(x+sl, y+st);
+            points[x+y*sw] = rs2CoordToWorldCoord(x+sl, y+st);
         }
     }
-    ofLogVerbose("KinectProjector") << "updateBasePlane(): Computing plane from points" ;
+    ofLogVerbose("Rs2Projector") << "updateBasePlane(): Computing plane from points" ;
     basePlaneEq = plane_from_points(points, sw*sh);
 	if (basePlaneEq.x == 0 && basePlaneEq.y == 0 && basePlaneEq.z == 0)
 	{
-		ofLogVerbose("KinectProjector") << "updateBasePlane(): plane_from_points could not compute basePlane";
+		ofLogVerbose("Rs2Projector") << "updateBasePlane(): plane_from_points could not compute basePlane";
 		return;
 	}
 
@@ -1125,52 +1122,52 @@ void KinectProjector::updateBasePlane()
 	updateStatusGUI();
 }
 
-void KinectProjector::updateMaxOffset(){
-    ofRectangle smallROI = kinectROI;
+void Rs2Projector::updateMaxOffset(){
+    ofRectangle smallROI = rs2ROI;
     smallROI.scaleFromCenter(0.75); // Reduce ROI to avoid problems with borders
-    ofLogVerbose("KinectProjector") << "updateMaxOffset(): smallROI: " << smallROI ;
+    ofLogVerbose("Rs2Projector") << "updateMaxOffset(): smallROI: " << smallROI ;
     int sw = static_cast<int>(smallROI.width);
     int sh = static_cast<int>(smallROI.height);
     int sl = static_cast<int>(smallROI.getLeft());
     int st = static_cast<int>(smallROI.getTop());
-    ofLogVerbose("KinectProjector") << "updateMaxOffset(): sw: " << sw << " sh : " << sh << " sl : " << sl << " st : " << st << " sw*sh : " << sw*sh ;
+    ofLogVerbose("Rs2Projector") << "updateMaxOffset(): sw: " << sw << " sh : " << sh << " sl : " << sl << " st : " << st << " sw*sh : " << sw*sh ;
     if (sw*sh == 0) {
-        ofLogVerbose("KinectProjector") << "updateMaxOffset(): smallROI is null, cannot compute base plane normal" ;
+        ofLogVerbose("Rs2Projector") << "updateMaxOffset(): smallROI is null, cannot compute base plane normal" ;
         return;
     }
     ofVec4f pt;
     ofVec3f* points;
     points = new ofVec3f[sw*sh];
-    ofLogVerbose("KinectProjector") << "updateMaxOffset(): Computing points in smallROI : " << sw*sh ;
+    ofLogVerbose("Rs2Projector") << "updateMaxOffset(): Computing points in smallROI : " << sw*sh ;
     for (int x = 0; x<sw; x++){
         for (int y = 0; y<sh; y ++){
-            points[x+y*sw] = kinectCoordToWorldCoord(x+sl, y+st);//vertexCcvertexCc;
+            points[x+y*sw] = rs2CoordToWorldCoord(x+sl, y+st);//vertexCcvertexCc;
         }
     }
-    ofLogVerbose("KinectProjector") << "updateMaxOffset(): Computing plane from points" ;
+    ofLogVerbose("Rs2Projector") << "updateMaxOffset(): Computing plane from points" ;
     ofVec4f eqoff = plane_from_points(points, sw*sh);
     maxOffset = -eqoff.w-maxOffsetSafeRange;
     maxOffsetBack = maxOffset;
     // Update max Offset
-    ofLogVerbose("KinectProjector") << "updateMaxOffset(): maxOffset" << maxOffset ;
-    kinectgrabber.performInThread([this](KinectGrabber & kg) {
+    ofLogVerbose("Rs2Projector") << "updateMaxOffset(): maxOffset" << maxOffset ;
+    rs2grabber.performInThread([this](Rs2Grabber & kg) {
         kg.setMaxOffset(this->maxOffset);
     });
 }
 
-bool KinectProjector::addPointPair() {
+bool Rs2Projector::addPointPair() {
     bool okchess = true;
     string resultMessage;
-    ofLogVerbose("KinectProjector") << "addPointPair(): Adding point pair in kinect world coordinates" ;
+    ofLogVerbose("Rs2Projector") << "addPointPair(): Adding point pair in rs2 world coordinates" ;
     int nDepthPoints = 0;
     for (int i=0; i<cvPoints.size(); i++) {
-        ofVec3f worldPoint = kinectCoordToWorldCoord(cvPoints[i].x, cvPoints[i].y);
+        ofVec3f worldPoint = rs2CoordToWorldCoord(cvPoints[i].x, cvPoints[i].y);
         if (worldPoint.z > 0)   nDepthPoints++;
     }
     if (nDepthPoints == (chessboardX-1)*(chessboardY-1)) {
         for (int i=0; i<cvPoints.size(); i++) {
-            ofVec3f worldPoint = kinectCoordToWorldCoord(cvPoints[i].x, cvPoints[i].y);
-            pairsKinect.push_back(worldPoint);
+            ofVec3f worldPoint = rs2CoordToWorldCoord(cvPoints[i].x, cvPoints[i].y);
+            pairsRs2.push_back(worldPoint);
             pairsProjector.push_back(currentProjectorPoints[i]);
         }
         resultMessage = "addPointPair(): Added " + ofToString((chessboardX-1)*(chessboardY-1)) + " points pairs.";
@@ -1182,11 +1179,11 @@ bool KinectProjector::addPointPair() {
         resultMessage = "addPointPair(): Points not added because not all chessboard\npoints' depth known. Try re-positionining.";
         okchess = false;
     }
-    ofLogVerbose("KinectProjector") << resultMessage ;
+    ofLogVerbose("Rs2Projector") << resultMessage ;
     return okchess;
 }
 
-void KinectProjector::askToFlattenSand(){
+void Rs2Projector::askToFlattenSand(){
     fboProjWindow.begin();
     ofBackground(255);
     fboProjWindow.end();
@@ -1195,11 +1192,11 @@ void KinectProjector::askToFlattenSand(){
     waitingForFlattenSand = true;
 }
 
-void KinectProjector::drawProjectorWindow(){
+void Rs2Projector::drawProjectorWindow(){
     fboProjWindow.draw(0,0);
 }
 
-void KinectProjector::drawMainWindow(float x, float y, float width, float height){
+void Rs2Projector::drawMainWindow(float x, float y, float width, float height){
 
 	bool forceScale = false;
 	if (forceScale)
@@ -1213,12 +1210,21 @@ void KinectProjector::drawMainWindow(float x, float y, float width, float height
 
 	if (displayGui)
 	{
+        StatusGUI->draw();
 		gui->draw();
-		StatusGUI->draw();
 	}
 }
 
-void KinectProjector::drawChessboard(int x, int y, int chessboardSize) {
+void Rs2Projector::init_FBOprojector(){
+    fboProjWindow.allocate(projRes.x, projRes.y, GL_RGBA);
+    fboProjWindow.begin();
+    ofClear(255, 255, 255, 0);
+    ofBackground(255); // Set to white in setup mode
+    fboProjWindow.end();
+}
+
+void Rs2Projector::drawChessboard(int x, int y, int chessboardSize) {
+    init_FBOprojector();
     fboProjWindow.begin();
     ofFill();
     // Draw the calibration chess board on the projector window
@@ -1248,7 +1254,7 @@ void KinectProjector::drawChessboard(int x, int y, int chessboardSize) {
     fboProjWindow.end();
 }
 
-void KinectProjector::drawGradField()
+void Rs2Projector::drawGradField()
 {
     ofClear(255, 0);
     for(int rowPos=0; rowPos< gradFieldrows ; rowPos++)
@@ -1257,7 +1263,7 @@ void KinectProjector::drawGradField()
         {
             float x = colPos*gradFieldResolution + gradFieldResolution/2;
             float y = rowPos*gradFieldResolution  + gradFieldResolution/2;
-            ofVec2f projectedPoint = kinectCoordToProjCoord(x, y);
+            ofVec2f projectedPoint = rs2CoordToProjCoord(x, y);
             int ind = colPos + rowPos * gradFieldcols;
             ofVec2f v2 = gradField[ind];
             v2 *= arrowLength;
@@ -1271,7 +1277,7 @@ void KinectProjector::drawGradField()
     }
 }
 
-void KinectProjector::drawArrow(ofVec2f projectedPoint, ofVec2f v1)
+void Rs2Projector::drawArrow(ofVec2f projectedPoint, ofVec2f v1)
 {
     float angle = ofRadToDeg(atan2(v1.y,v1.x));
     float length = v1.length();
@@ -1286,42 +1292,42 @@ void KinectProjector::drawArrow(ofVec2f projectedPoint, ofVec2f v1)
     ofPopMatrix();
 }
 
-void KinectProjector::updateNativeScale(float scaleMin, float scaleMax){
+void Rs2Projector::updateNativeScale(float scaleMin, float scaleMax){
     FilteredDepthImage.setNativeScale(scaleMin, scaleMax);
 }
 
-ofVec2f KinectProjector::kinectCoordToProjCoord(float x, float y) // x, y in kinect pixel coord
+ofVec2f Rs2Projector::rs2CoordToProjCoord(float x, float y) // x, y in rs2 pixel coord
 {
-    return worldCoordToProjCoord(kinectCoordToWorldCoord(x, y));
+    return worldCoordToProjCoord(rs2CoordToWorldCoord(x, y));
 }
 
-ofVec2f KinectProjector::kinectCoordToProjCoord(float x, float y, float z)
+ofVec2f Rs2Projector::rs2CoordToProjCoord(float x, float y, float z)
 {
 	ofVec4f kc = ofVec2f(x, y);
 	kc.z = z;
 	kc.w = 1;
-	ofVec4f wc = kinectWorldMatrix*kc*kc.z;
+	ofVec4f wc = rs2WorldMatrix*kc*kc.z;
 
 	return worldCoordToProjCoord(wc);
 }
 
-ofVec2f KinectProjector::worldCoordToProjCoord(ofVec3f vin)
+ofVec2f Rs2Projector::worldCoordToProjCoord(ofVec3f vin)
 {
     ofVec4f wc = vin;
     wc.w = 1;
-    ofVec4f screenPos = kinectProjMatrix*wc;
+    ofVec4f screenPos = rs2ProjMatrix*wc;
     ofVec2f projectedPoint(screenPos.x/screenPos.z, screenPos.y/screenPos.z);
     return projectedPoint;
 }
 
-ofVec3f KinectProjector::projCoordAndWorldZToWorldCoord(float projX, float projY, float worldZ)
+ofVec3f Rs2Projector::projCoordAndWorldZToWorldCoord(float projX, float projY, float worldZ)
 {
-	float a = kinectProjMatrix(0, 0) - kinectProjMatrix(2, 0)*projX;
-	float b = kinectProjMatrix(0, 1) - kinectProjMatrix(2, 1)*projX;
-	float c = (kinectProjMatrix(2, 2)*worldZ + 1)*projX - (kinectProjMatrix(0, 2)*worldZ + kinectProjMatrix(0, 3));
-	float d = kinectProjMatrix(1, 0) - kinectProjMatrix(2, 0)*projY;
-	float e = kinectProjMatrix(1, 1) - kinectProjMatrix(2, 1)*projY;
-	float f = (kinectProjMatrix(2, 2)*worldZ + 1)*projY - (kinectProjMatrix(1, 2)*worldZ + kinectProjMatrix(1, 3));
+	float a = rs2ProjMatrix(0, 0) - rs2ProjMatrix(2, 0)*projX;
+	float b = rs2ProjMatrix(0, 1) - rs2ProjMatrix(2, 1)*projX;
+	float c = (rs2ProjMatrix(2, 2)*worldZ + 1)*projX - (rs2ProjMatrix(0, 2)*worldZ + rs2ProjMatrix(0, 3));
+	float d = rs2ProjMatrix(1, 0) - rs2ProjMatrix(2, 0)*projY;
+	float e = rs2ProjMatrix(1, 1) - rs2ProjMatrix(2, 1)*projY;
+	float f = (rs2ProjMatrix(2, 2)*worldZ + 1)*projY - (rs2ProjMatrix(1, 2)*worldZ + rs2ProjMatrix(1, 3));
 	
 	float det = a*e - b*d;
 	if (det == 0)
@@ -1331,81 +1337,77 @@ ofVec3f KinectProjector::projCoordAndWorldZToWorldCoord(float projX, float projY
 	return ofVec3f(x, y, worldZ);
 }
 
-ofVec3f KinectProjector::kinectCoordToWorldCoord(float x, float y) // x, y in kinect pixel coord
+ofVec3f Rs2Projector::rs2CoordToWorldCoord(float x, float y) // x, y in rs2 pixel coord
 {
 	// Simple crash avoidence
 	if (y < 0)
 		y = 0;
-	if (y >= kinectRes.y)
-		y = kinectRes.y - 1;
+	if (y >= rs2Res.y)
+		y = rs2Res.y - 1;
 	if (x < 0)
 		x = 0;
-	if (x >= kinectRes.x)
-		x = kinectRes.x - 1;
+	if (x >= rs2Res.x)
+		x = rs2Res.x - 1;
 
     ofVec4f kc = ofVec2f(x, y);
-    int ind = static_cast<int>(y) * kinectRes.x + static_cast<int>(x);
+    int ind = static_cast<int>(y) * rs2Res.x + static_cast<int>(x);
     kc.z = FilteredDepthImage.getFloatPixelsRef().getData()[ind];
-	//if (kc.z == 0)
-	//	ofLogVerbose("KinectProjector") << "kinectCoordToWorldCoord z coordinate 0";
-	//if (kc.z == 4000)
-	//	ofLogVerbose("KinectProjector") << "kinectCoordToWorldCoord z coordinate 4000 (invalid)";
 
     kc.w = 1;
-    ofVec4f wc = kinectWorldMatrix*kc*kc.z;
+    ofVec4f wc = rs2WorldMatrix*kc*kc.z;
     return ofVec3f(wc);
 }
 
-ofVec2f KinectProjector::worldCoordTokinectCoord(ofVec3f wc)
+ofVec2f Rs2Projector::worldCoordTors2Coord(ofVec3f wc)
 {
-	float x = (wc.x / wc.z - kinectWorldMatrix(0, 3)) / kinectWorldMatrix(0, 0);
-	float y = (wc.y / wc.z - kinectWorldMatrix(1, 3)) / kinectWorldMatrix(1, 1);
+	float x = (wc.x / wc.z - rs2WorldMatrix(0, 3)) / rs2WorldMatrix(0, 0);
+	float y = (wc.y / wc.z - rs2WorldMatrix(1, 3)) / rs2WorldMatrix(1, 1);
 	return ofVec2f(x, y);
 }
 
-ofVec3f KinectProjector::RawKinectCoordToWorldCoord(float x, float y) // x, y in kinect pixel coord
+ofVec3f Rs2Projector::Rawrs2CoordToWorldCoord(float x, float y) // x, y in rs2 pixel coord
 {
-    ofVec4f kc = ofVec3f(x, y, kinectgrabber.getRawDepthAt(static_cast<int>(x), static_cast<int>(y)));
+    ofVec4f kc = ofVec3f(x, y, rs2grabber.getRawDepthAt(static_cast<int>(x), static_cast<int>(y)));
     kc.w = 1;
-    ofVec4f wc = kinectWorldMatrix*kc*kc.z;
+    ofVec4f wc = rs2WorldMatrix*kc*kc.z;
     return ofVec3f(wc);
 }
 
-float KinectProjector::elevationAtKinectCoord(float x, float y) // x, y in kinect pixel coordinate
+float Rs2Projector::elevationAtrs2Coord(float x, float y) // x, y in rs2 pixel coordinate
 {
-    ofVec4f wc = kinectCoordToWorldCoord(x, y);
+    ofVec4f wc = rs2CoordToWorldCoord(x, y);
     wc.w = 1;
     float elevation = -basePlaneEq.dot(wc);
     return elevation;
 }
 
-float KinectProjector::elevationToKinectDepth(float elevation, float x, float y) // x, y in kinect pixel coordinate
+float Rs2Projector::elevationTors2Depth(float elevation, float x, float y) // x, y in rs2 pixel coordinate
 {
-    ofVec4f wc = kinectCoordToWorldCoord(x, y);
+    ofVec4f wc = rs2CoordToWorldCoord(x, y);
     wc.z = 0;
     wc.w = 1;
-    float kinectDepth = -(basePlaneEq.dot(wc)+elevation)/basePlaneEq.z;
-    return kinectDepth;
+    float rs2Depth = -(basePlaneEq.dot(wc)+elevation)/basePlaneEq.z;
+    return rs2Depth;
 }
 
-ofVec2f KinectProjector::gradientAtKinectCoord(float x, float y){
+ofVec2f Rs2Projector::gradientAtrs2Coord(float x, float y){
     int ind = static_cast<int>(floor(x/gradFieldResolution)) + gradFieldcols*static_cast<int>(floor(y/gradFieldResolution));
     fishInd = ind;
     return gradField[ind];
 }
 
-void KinectProjector::setupGui(){
+void Rs2Projector::setupGui(){
     // instantiate and position the gui //
     gui = new ofxDatGui( ofxDatGuiAnchor::TOP_RIGHT );
 	gui->addButton("RUN!")->setName("Start Application");
 	gui->addBreak();
     gui->addFRM();
-	fpsKinectText = gui->addTextInput("Kinect FPS", "0");
+	fpsRs2Text = gui->addTextInput("Rs2 FPS", "0");
     gui->addBreak();
     
     auto advancedFolder = gui->addFolder("Advanced", ofColor::purple);
-    advancedFolder->addToggle("Display kinect depth view", drawKinectView)->setName("Draw kinect depth view");
-	advancedFolder->addToggle("Display kinect color view", drawKinectColorView)->setName("Draw kinect color view");
+    advancedFolder->addToggle("Display rs2 depth view", drawRs2View)->setName("Draw rs2 depth view");
+	advancedFolder->addToggle("Display rs2 color view", drawRs2ColorView)->setName("Draw rs2 color view");
 	advancedFolder->addToggle("Dump Debug", DumpDebugFiles);
 	advancedFolder->addSlider("Ceiling", -300, 300, 0);
     advancedFolder->addToggle("Spatial filtering", spatialFiltering);
@@ -1421,43 +1423,39 @@ void KinectProjector::setupGui(){
 	
 	auto calibrationFolder = gui->addFolder("Calibration", ofColor::darkCyan);
 	calibrationFolder->addButton("Manually define sand region");
-	calibrationFolder->addButton("Automatically calibrate kinect & projector");
+	calibrationFolder->addButton("Automatically calibrate rs2 & projector");
 	calibrationFolder->addButton("Auto Adjust ROI");
 	calibrationFolder->addToggle("Show ROI on sand", doShowROIonProjector);
-
-	//	advancedFolder->addButton("Draw ROI")->setName("Draw ROI");
- //   advancedFolder->addButton("Calibrate")->setName("Full Calibration");
-//	advancedFolder->addButton("Update ROI from calibration");
-//    gui->addButton("Automatically detect sand region");
-//    calibrationFolder->addButton("Manually define sand region");
-//    gui->addButton("Automatically calibrate kinect & projector");
-//    calibrationFolder->addButton("Manually calibrate kinect & projector");
     
-//    gui->addBreak();
     gui->addHeader(":: Settings ::", false);
     
     // once the gui has been assembled, register callbacks to listen for component specific events //
-    gui->onButtonEvent(this, &KinectProjector::onButtonEvent);
-    gui->onToggleEvent(this, &KinectProjector::onToggleEvent);
-    gui->onSliderEvent(this, &KinectProjector::onSliderEvent);
+    gui->onButtonEvent(this, &Rs2Projector::onButtonEvent);
+    gui->onToggleEvent(this, &Rs2Projector::onToggleEvent);
+    gui->onSliderEvent(this, &Rs2Projector::onSliderEvent);
 
 	// disactivate autodraw
 	gui->setAutoDraw(false);
 
-	StatusGUI = new ofxDatGui(ofxDatGuiAnchor::BOTTOM_LEFT);
+    StatusGUI = new ofxDatGui( ofxDatGuiAnchor::TOP_LEFT );
+    
 	StatusGUI->addLabel("Application Status");
-	StatusGUI->addLabel("Kinect Status");
+	StatusGUI->addLabel("Rs2 Status");
+    StatusGUI->addLabel("Ready Calibration");
 	StatusGUI->addLabel("ROI Status");
 	StatusGUI->addLabel("Baseplane Status");
 	StatusGUI->addLabel("Calibration Status");
 	StatusGUI->addLabel("Calibration Step");
+    StatusGUI->addLabel("Calibration Error Count");
 	StatusGUI->addLabel("Projector Status");
 	StatusGUI->addHeader(":: Status ::", false);
-	StatusGUI->setAutoDraw(false);
+    StatusGUI->addBreak();
+    StatusGUI->setAutoDraw(false);
+    updateStatusGUI();
 }
 
 
-void KinectProjector::startApplication()
+void Rs2Projector::startApplication()
 {
 	if (applicationState == APPLICATION_STATE_RUNNING)
 	{
@@ -1467,43 +1465,43 @@ void KinectProjector::startApplication()
 	}
 	if (applicationState == APPLICATION_STATE_CALIBRATING)
 	{
-		ofLogVerbose("KinectProjector") << "KinectProjector.startApplication(): we are calibrating ";
+		ofLogVerbose("Rs2Projector") << "Rs2Projector.startApplication(): we are calibrating ";
 		return;
 	}
-	if (!kinectOpened)
+	if (!rs2Opened)
 	{
-		ofLogVerbose("KinectProjector") << "KinectProjector.startApplication(): Kinect is not running ";
+		ofLogVerbose("Rs2Projector") << "Rs2Projector.startApplication(): Rs2 is not running ";
 		return;
 	}
 
-	if (!projKinectCalibrated)
+	if (!projRs2Calibrated)
 	{
-		ofLogVerbose("KinectProjector") << "KinectProjector.startApplication(): Kinect projector not calibrated - trying to load calibration.xml";
+		ofLogVerbose("Rs2Projector") << "Rs2Projector.startApplication(): Rs2 projector not calibrated - trying to load calibration.xml";
 		//Try to load calibration file if possible
 		if (kpt->loadCalibration("settings/calibration.xml"))
 		{
-			ofLogVerbose("KinectProjector") << "KinectProjector.setup(): Calibration loaded ";
-			kinectProjMatrix = kpt->getProjectionMatrix();
-			ofLogVerbose("KinectProjector") << "KinectProjector.setup(): kinectProjMatrix: " << kinectProjMatrix;
-			projKinectCalibrated = true;
-			projKinectCalibrationUpdated = true;
+			ofLogVerbose("Rs2Projector") << "Rs2Projector.setup(): Calibration loaded ";
+			rs2ProjMatrix = kpt->getProjectionMatrix();
+			ofLogVerbose("Rs2Projector") << "Rs2Projector.setup(): rs2ProjMatrix: " << rs2ProjMatrix;
+			projRs2Calibrated = true;
+			projRs2CalibrationUpdated = true;
 			updateStatusGUI();
 		}
 		else
 		{
-			ofLogVerbose("KinectProjector") << "KinectProjector.startApplication(): Calibration could not be loaded";
+			ofLogVerbose("Rs2Projector") << "Rs2Projector.startApplication(): Calibration could not be loaded";
 			return;
 		}
 	}
 
 	if (!ROIcalibrated)
 	{
-		ofLogVerbose("KinectProjector") << "KinectProjector.startApplication(): Kinect ROI not calibrated - trying to load kinectProjectorSettings.xml";
+		ofLogVerbose("Rs2Projector") << "Rs2Projector.startApplication(): Rs2 ROI not calibrated - trying to load rs2ProjectorSettings.xml";
 		//Try to load settings file if possible
 		if (loadSettings())
 		{
-			ofLogVerbose("KinectProjector") << "KinectProjector.setup(): Settings loaded ";
-			setNewKinectROI();
+			ofLogVerbose("Rs2Projector") << "Rs2Projector.setup(): Settings loaded ";
+			setNewRs2ROI();
 			ROIcalibrated = true;
 			basePlaneComputed = true;
 			setFullFrameFiltering(doFullFrameFiltering);
@@ -1512,14 +1510,14 @@ void KinectProjector::startApplication()
 			setSpatialFiltering(spatialFiltering);
 
 			int nAvg = numAveragingSlots;
-			kinectgrabber.performInThread([nAvg](KinectGrabber & kg) {
+			rs2grabber.performInThread([nAvg](Rs2Grabber & kg) {
 				kg.setAveragingSlotsNumber(nAvg); });
 
 			updateStatusGUI();
 		}
 		else 
 		{
-			ofLogVerbose("KinectProjector") << "KinectProjector.setup(): Settings could not be loaded ";
+			ofLogVerbose("Rs2Projector") << "Rs2Projector.setup(): Settings could not be loaded ";
 			return;
 		}
 	}
@@ -1531,23 +1529,23 @@ void KinectProjector::startApplication()
 	fullCalibState = FULL_CALIBRATION_STATE_DONE;
 	ROICalibState = ROI_CALIBRATION_STATE_DONE;
 	autoCalibState = AUTOCALIB_STATE_DONE;
-	drawKinectColorView = false;
-	drawKinectView = false;
-	gui->getToggle("Draw kinect color view")->setChecked(drawKinectColorView);
-	gui->getToggle("Draw kinect depth view")->setChecked(drawKinectView);
+	drawRs2ColorView = false;
+	drawRs2View = false;
+	gui->getToggle("Draw rs2 color view")->setChecked(drawRs2ColorView);
+	gui->getToggle("Draw rs2 depth view")->setChecked(drawRs2View);
 	updateStatusGUI();
 }
 
-void KinectProjector::startFullCalibration()
+void Rs2Projector::startFullCalibration()
 {
-	if (!kinectOpened)
+	if (!rs2Opened)
 	{
-		ofLogVerbose("KinectProjector") << "startFullCalibration(): Kinect not running";
+		ofLogVerbose("Rs2Projector") << "startFullCalibration(): Rs2 not running";
 		return;
 	}
 	if (applicationState == APPLICATION_STATE_CALIBRATING)
 	{
-		ofLogVerbose("KinectProjector") << "startFullCalibration(): we are already calibrating";
+		ofLogVerbose("Rs2Projector") << "startFullCalibration(): we are already calibrating";
 		return;
 	}
 
@@ -1558,26 +1556,26 @@ void KinectProjector::startFullCalibration()
 	confirmModal->setTitle("Full calibration");
     calibModal->setTitle("Full calibration");
     askToFlattenSand();
-    ofLogVerbose("KinectProjector") << "startFullCalibration(): Starting full calibration" ;
+    ofLogVerbose("Rs2Projector") << "startFullCalibration(): Starting full calibration" ;
 	updateStatusGUI();
 }
 
-void KinectProjector::startAutomaticROIDetection(){
+void Rs2Projector::startAutomaticROIDetection(){
 	applicationState = APPLICATION_STATE_CALIBRATING;
     calibrationState = CALIBRATION_STATE_ROI_AUTO_DETERMINATION;
     ROICalibState = ROI_CALIBRATION_STATE_INIT;
-    ofLogVerbose("KinectProjector") << "onButtonEvent(): Finding ROI" ;
+    ofLogVerbose("Rs2Projector") << "onButtonEvent(): Finding ROI" ;
     confirmModal->setTitle("Detect sand region");
     calibModal->setTitle("Detect sand region");
     askToFlattenSand();
-    ofLogVerbose("KinectProjector") << "startAutomaticROIDetection(): starting ROI detection" ;
+    ofLogVerbose("Rs2Projector") << "startAutomaticROIDetection(): starting ROI detection" ;
 	updateStatusGUI();
 }
 
-void KinectProjector::startAutomaticKinectProjectorCalibration(){
-	if (!kinectOpened)
+void Rs2Projector::startAutomaticrs2ProjectorCalibration(){
+	if (!rs2Opened)
 	{
-		ofLogVerbose("KinectProjector") << "startAutomaticKinectProjectorCalibration(): Kinect not running";
+		ofLogVerbose("Rs2Projector") << "startAutomaticRs2ProjectorCalibration(): Rs2 not running";
 		return;
 	}
 	if (applicationState == APPLICATION_STATE_CALIBRATING)
@@ -1589,58 +1587,58 @@ void KinectProjector::startAutomaticKinectProjectorCalibration(){
 	}
 	if (!ROIcalibrated)
 	{
-		ofLogVerbose("KinectProjector") << "startAutomaticKinectProjectorCalibration(): ROI not defined";
+		ofLogVerbose("Rs2Projector") << "startAutomaticRs2ProjectorCalibration(): ROI not defined";
 		return;
 	}
 
-	calibrationText = "Starting projector/kinect calibration";
+	calibrationText = "Starting projector/rs2 calibration";
 
 	applicationState = APPLICATION_STATE_CALIBRATING;
-    calibrationState = CALIBRATION_STATE_PROJ_KINECT_AUTO_CALIBRATION;
+    calibrationState = CALIBRATION_STATE_PROJ_RS2_AUTO_CALIBRATION;
     autoCalibState = AUTOCALIB_STATE_INIT_POINT;
     confirmModal->setTitle("Calibrate projector");
     calibModal->setTitle("Calibrate projector");
     askToFlattenSand();
-    ofLogVerbose("KinectProjector") << "startAutomaticKinectProjectorCalibration(): Starting autocalib" ;
+    ofLogVerbose("Rs2Projector") << "startAutomaticRs2ProjectorCalibration(): Starting autocalib" ;
 	updateStatusGUI();
 }
 
-void KinectProjector::setSpatialFiltering(bool sspatialFiltering){
+void Rs2Projector::setSpatialFiltering(bool sspatialFiltering){
     spatialFiltering = sspatialFiltering;
-    kinectgrabber.performInThread([sspatialFiltering](KinectGrabber & kg) {
+    rs2grabber.performInThread([sspatialFiltering](Rs2Grabber & kg) {
         kg.setSpatialFiltering(sspatialFiltering);
     });
 	updateStatusGUI();
 }
 
-void KinectProjector::setInPainting(bool inp) {
+void Rs2Projector::setInPainting(bool inp) {
 	doInpainting = inp;
-	kinectgrabber.performInThread([inp](KinectGrabber & kg) {
+	rs2grabber.performInThread([inp](Rs2Grabber & kg) {
 		kg.setInPainting(inp);
 	});
 	updateStatusGUI();
 }
 
 
-void KinectProjector::setFullFrameFiltering(bool ff)
+void Rs2Projector::setFullFrameFiltering(bool ff)
 {
 	doFullFrameFiltering = ff;
-	ofRectangle ROI = kinectROI;
-	kinectgrabber.performInThread([ff, ROI](KinectGrabber & kg) {
+	ofRectangle ROI = rs2ROI;
+	rs2grabber.performInThread([ff, ROI](Rs2Grabber & kg) {
 		kg.setFullFrameFiltering(ff, ROI);
 	});
 	updateStatusGUI();
 }
 
-void KinectProjector::setFollowBigChanges(bool sfollowBigChanges){
+void Rs2Projector::setFollowBigChanges(bool sfollowBigChanges){
     followBigChanges = sfollowBigChanges;
-    kinectgrabber.performInThread([sfollowBigChanges](KinectGrabber & kg) {
+    rs2grabber.performInThread([sfollowBigChanges](Rs2Grabber & kg) {
         kg.setFollowBigChange(sfollowBigChanges);
     });
 	updateStatusGUI();
 }
 
-void KinectProjector::onButtonEvent(ofxDatGuiButtonEvent e){
+void Rs2Projector::onButtonEvent(ofxDatGuiButtonEvent e){
     if (e.target->is("Full Calibration")) {
         startFullCalibration();
     } 
@@ -1655,9 +1653,9 @@ void KinectProjector::onButtonEvent(ofxDatGuiButtonEvent e){
     } else if (e.target->is("Manually define sand region")){
 		StartManualROIDefinition();
 	}
-	else if (e.target->is("Automatically calibrate kinect & projector")) {
-        startAutomaticKinectProjectorCalibration();
-    } else if (e.target->is("Manually calibrate kinect & projector")) {
+	else if (e.target->is("Automatically calibrate rs2 & projector")) {
+        startAutomaticrs2ProjectorCalibration();
+    } else if (e.target->is("Manually calibrate rs2 & projector")) {
         // Not implemented yet
     } else if (e.target->is("Reset sea level")){
 		ResetSeaLevel();
@@ -1669,7 +1667,7 @@ void KinectProjector::onButtonEvent(ofxDatGuiButtonEvent e){
 	}
 }
 
-void KinectProjector::StartManualROIDefinition()
+void Rs2Projector::StartManualROIDefinition()
 {
 	calibrationState = CALIBRATION_STATE_ROI_MANUAL_DETERMINATION;
 	ROICalibState = ROI_CALIBRATION_STATE_INIT;
@@ -1679,7 +1677,7 @@ void KinectProjector::StartManualROIDefinition()
 	updateStatusGUI();
 }
 
-void KinectProjector::ResetSeaLevel()
+void Rs2Projector::ResetSeaLevel()
 {
 	gui->getSlider("Tilt X")->setValue(0);
 	gui->getSlider("Tilt Y")->setValue(0);
@@ -1690,7 +1688,7 @@ void KinectProjector::ResetSeaLevel()
 	basePlaneUpdated = true;
 }
 
-void KinectProjector::showROIonProjector(bool show)
+void Rs2Projector::showROIonProjector(bool show)
 {
 	doShowROIonProjector = show;
 	fboProjWindow.begin();
@@ -1698,12 +1696,12 @@ void KinectProjector::showROIonProjector(bool show)
 	fboProjWindow.end();
 }
 
-bool KinectProjector::getDumpDebugFiles()
+bool Rs2Projector::getDumpDebugFiles()
 {
 	return DumpDebugFiles;
 }
 
-void KinectProjector::onToggleEvent(ofxDatGuiToggleEvent e){
+void Rs2Projector::onToggleEvent(ofxDatGuiToggleEvent e){
     if (e.target->is("Spatial filtering")) {
 		setSpatialFiltering(e.checked);
 	}
@@ -1716,20 +1714,20 @@ void KinectProjector::onToggleEvent(ofxDatGuiToggleEvent e){
 	else if (e.target->is("Full Frame Filtering")) {
 		setFullFrameFiltering(e.checked);
 	}
-	else if (e.target->is("Draw kinect depth view")){
-        drawKinectView = e.checked;
-		if (drawKinectView)
+	else if (e.target->is("Draw rs2 depth view")){
+        drawRs2View = e.checked;
+		if (drawRs2View)
 		{
-			drawKinectColorView = false;
-			gui->getToggle("Draw kinect color view")->setChecked(drawKinectColorView);
+			drawRs2ColorView = false;
+			gui->getToggle("Draw rs2 color view")->setChecked(drawRs2ColorView);
 		}
     }
-	else if (e.target->is("Draw kinect color view")) {
-		drawKinectColorView = e.checked;
-		if (drawKinectColorView)
+	else if (e.target->is("Draw rs2 color view")) {
+		drawRs2ColorView = e.checked;
+		if (drawRs2ColorView)
 		{
-			drawKinectView = false;
-			gui->getToggle("Draw kinect depth view")->setChecked(drawKinectView);
+			drawRs2View = false;
+			gui->getToggle("Draw rs2 depth view")->setChecked(drawRs2View);
 		}
 	}
 	else if (e.target->is("Dump Debug"))
@@ -1742,7 +1740,7 @@ void KinectProjector::onToggleEvent(ofxDatGuiToggleEvent e){
 	}
 }
 
-void KinectProjector::onSliderEvent(ofxDatGuiSliderEvent e){
+void Rs2Projector::onSliderEvent(ofxDatGuiSliderEvent e){
     if (e.target->is("Tilt X") || e.target->is("Tilt Y")) {
         basePlaneNormal = basePlaneNormalBack.getRotated(gui->getSlider("Tilt X")->getValue(), ofVec3f(1,0,0));
         basePlaneNormal.rotate(gui->getSlider("Tilt Y")->getValue(), ofVec3f(0,1,0));
@@ -1754,37 +1752,37 @@ void KinectProjector::onSliderEvent(ofxDatGuiSliderEvent e){
         basePlaneUpdated = true;
     } else if (e.target->is("Ceiling")){
         maxOffset = maxOffsetBack-e.value;
-        ofLogVerbose("KinectProjector") << "onSliderEvent(): maxOffset" << maxOffset ;
-        kinectgrabber.performInThread([this](KinectGrabber & kg) {
+        ofLogVerbose("Rs2Projector") << "onSliderEvent(): maxOffset" << maxOffset ;
+        rs2grabber.performInThread([this](Rs2Grabber & kg) {
             kg.setMaxOffset(this->maxOffset);
         });
     } else if(e.target->is("Averaging")){
         numAveragingSlots = e.value;
-        kinectgrabber.performInThread([e](KinectGrabber & kg) {
+        rs2grabber.performInThread([e](Rs2Grabber & kg) {
             kg.setAveragingSlotsNumber(e.value);
         });
     }
 }
 
-void KinectProjector::onConfirmModalEvent(ofxModalEvent e)
+void Rs2Projector::onConfirmModalEvent(ofxModalEvent e)
 {
     if (e.type == ofxModalEvent::SHOWN)
 	{
-        ofLogVerbose("KinectProjector") << "Confirm modal window is open" ;
+        ofLogVerbose("Rs2Projector") << "Confirm modal window is open" ;
     }  
 	else if (e.type == ofxModalEvent::HIDDEN)
 	{
-		if (!kinectOpened)
+		if (!rs2Opened)
 		{
-			confirmModal->setMessage("Still no connection to Kinect. Please check that the kinect is (1) connected, (2) powerer and (3) not used by another application.");
+			confirmModal->setMessage("Still no connection to Rs2. Please check that the rs2 is (1) connected, (2) powerer and (3) not used by another application.");
 			confirmModal->show();
 		}
-		ofLogVerbose("KinectProjector") << "Confirm modal window is closed" ;
+		ofLogVerbose("Rs2Projector") << "Confirm modal window is closed" ;
     }   
 	else if (e.type == ofxModalEvent::CANCEL)
 	{
 		applicationState = APPLICATION_STATE_SETUP;
-        ofLogVerbose("KinectProjector") << "Modal cancel button pressed: Aborting" ;
+        ofLogVerbose("Rs2Projector") << "Modal cancel button pressed: Aborting" ;
 		updateStatusGUI();
     }
 	else if (e.type == ofxModalEvent::CONFIRM)
@@ -1795,7 +1793,7 @@ void KinectProjector::onConfirmModalEvent(ofxModalEvent e)
 			{
                 waitingForFlattenSand = false;
             }  
-			else if ((calibrationState == CALIBRATION_STATE_PROJ_KINECT_AUTO_CALIBRATION || (calibrationState == CALIBRATION_STATE_FULL_AUTO_CALIBRATION && fullCalibState == FULL_CALIBRATION_STATE_AUTOCALIB))
+			else if ((calibrationState == CALIBRATION_STATE_PROJ_RS2_AUTO_CALIBRATION || (calibrationState == CALIBRATION_STATE_FULL_AUTO_CALIBRATION && fullCalibState == FULL_CALIBRATION_STATE_AUTOCALIB))
                         && autoCalibState == AUTOCALIB_STATE_NEXT_POINT)
 			{
                 if (!upframe)
@@ -1804,60 +1802,60 @@ void KinectProjector::onConfirmModalEvent(ofxModalEvent e)
                 }
             }
         }
-        ofLogVerbose("KinectProjector") << "Modal confirm button pressed" ;
+        ofLogVerbose("Rs2Projector") << "Modal confirm button pressed" ;
     }
 }
 
-void KinectProjector::onCalibModalEvent(ofxModalEvent e)
+void Rs2Projector::onCalibModalEvent(ofxModalEvent e)
 {
     if (e.type == ofxModalEvent::SHOWN)
 	{
-		ofLogVerbose("KinectProjector") << "calib modal window is open";
+		ofLogVerbose("Rs2Projector") << "calib modal window is open";
     }  
 	else if (e.type == ofxModalEvent::HIDDEN)
 	{
-		ofLogVerbose("KinectProjector") << "calib modal window is closed";
+		ofLogVerbose("Rs2Projector") << "calib modal window is closed";
 	}
 	else if (e.type == ofxModalEvent::CONFIRM)
 	{
 		applicationState = APPLICATION_STATE_SETUP;
-        ofLogVerbose("KinectProjector") << "Modal cancel button pressed: Aborting" ;
+        ofLogVerbose("Rs2Projector") << "Modal cancel button pressed: Aborting" ;
 		updateStatusGUI();
     }
 }
 
-void KinectProjector::saveCalibrationAndSettings()
+void Rs2Projector::saveCalibrationAndSettings()
 {
-	if (projKinectCalibrated)
+	if (projRs2Calibrated)
 	{
 		if (kpt->saveCalibration("settings/calibration.xml"))
 		{
-			ofLogVerbose("KinectProjector") << "update(): initialisation: Calibration saved ";
+			ofLogVerbose("Rs2Projector") << "update(): initialisation: Calibration saved ";
 		}
 		else {
-			ofLogVerbose("KinectProjector") << "update(): initialisation: Calibration could not be saved ";
+			ofLogVerbose("Rs2Projector") << "update(): initialisation: Calibration could not be saved ";
 		}
 	}
 	if (ROIcalibrated)
 	{
 		if (saveSettings())
 		{
-			ofLogVerbose("KinectProjector") << "update(): initialisation: Settings saved ";
+			ofLogVerbose("Rs2Projector") << "update(): initialisation: Settings saved ";
 		}
 		else {
-			ofLogVerbose("KinectProjector") << "update(): initialisation: Settings could not be saved ";
+			ofLogVerbose("Rs2Projector") << "update(): initialisation: Settings could not be saved ";
 		}
 	}
 }
 
-bool KinectProjector::loadSettings(){
-    string settingsFile = "settings/kinectProjectorSettings.xml";
+bool Rs2Projector::loadSettings(){
+    string settingsFile = "settings/rs2ProjectorSettings.xml";
     
     ofXml xml;
     if (!xml.load(settingsFile))
         return false;
-    xml.setTo("KINECTSETTINGS");
-    kinectROI = xml.getValue<ofRectangle>("kinectROI");
+    xml.setTo("RS2SETTINGS");
+    rs2ROI = xml.getValue<ofRectangle>("rs2ROI");
     basePlaneNormalBack = xml.getValue<ofVec3f>("basePlaneNormalBack");
     basePlaneNormal = basePlaneNormalBack;
     basePlaneOffsetBack = xml.getValue<ofVec3f>("basePlaneOffsetBack");
@@ -1873,14 +1871,14 @@ bool KinectProjector::loadSettings(){
     return true;
 }
 
-bool KinectProjector::saveSettings()
+bool Rs2Projector::saveSettings()
 {
-    string settingsFile = "settings/kinectProjectorSettings.xml";
+    string settingsFile = "settings/rs2ProjectorSettings.xml";
 
     ofXml xml;
-    xml.addChild("KINECTSETTINGS");
-    xml.setTo("KINECTSETTINGS");
-    xml.addValue("kinectROI", kinectROI);
+    xml.addChild("RS2SETTINGS");
+    xml.setTo("RS2SETTINGS");
+    xml.addValue("rs2ROI", rs2ROI);
     xml.addValue("basePlaneNormalBack", basePlaneNormalBack);
     xml.addValue("basePlaneOffsetBack", basePlaneOffsetBack);
     xml.addValue("basePlaneEq", basePlaneEq);
@@ -1894,18 +1892,18 @@ bool KinectProjector::saveSettings()
     return xml.save(settingsFile);
 }
 
-void KinectProjector::ProcessChessBoardInput(ofxCvGrayscaleImage& image)
+void Rs2Projector::ProcessChessBoardInput(ofxCvGrayscaleImage& image)
 {
-	CheckAndNormalizeKinectROI();
+	CheckAndNormalizeRs2ROI();
 
 	unsigned char *imgD = image.getPixels().getData();
 	unsigned char minV = 255;
 	unsigned char maxV = 0;
 
 	// Find min and max values inside ROI
-	for (int y = kinectROI.getMinY(); y < kinectROI.getMaxY(); y++)
+	for (int y = rs2ROI.getMinY(); y < rs2ROI.getMaxY(); y++)
 	{
-		for (int x = kinectROI.getMinX(); x < kinectROI.getMaxX(); x++)
+		for (int x = rs2ROI.getMinX(); x < rs2ROI.getMaxX(); x++)
 		{
 			int idx = y* image.width + x;
 			unsigned char val = imgD[idx];
@@ -1934,37 +1932,37 @@ void KinectProjector::ProcessChessBoardInput(ofxCvGrayscaleImage& image)
 	}
 }
 
-void KinectProjector::CheckAndNormalizeKinectROI()
+void Rs2Projector::CheckAndNormalizeRs2ROI()
 {
 	bool fixed = false;
-	if (kinectROI.x < 0)
+	if (rs2ROI.x < 0)
 	{
 		fixed = true;
-		kinectROI.x = 0;
+		rs2ROI.x = 0;
 	}
-	if (kinectROI.y < 0)
+	if (rs2ROI.y < 0)
 	{
 		fixed = true;
-		kinectROI.y = 0;
+		rs2ROI.y = 0;
 	}
-	if (kinectROI.x + kinectROI.width >= kinectRes.x)
+	if (rs2ROI.x + rs2ROI.width >= rs2Res.x)
 	{
 		fixed = true;
-		kinectROI.width = kinectRes.x - 1 - kinectROI.x;
+		rs2ROI.width = rs2Res.x - 1 - rs2ROI.x;
 	}
-	if (kinectROI.y + kinectROI.height >= kinectRes.y)
+	if (rs2ROI.y + rs2ROI.height >= rs2Res.y)
 	{
 		fixed = true;
-		kinectROI.height = kinectRes.y - 1 - kinectROI.y;
+		rs2ROI.height = rs2Res.y - 1 - rs2ROI.y;
 	}
 	
 	if (fixed)
-		ofLogVerbose("KinectProjector") << "CheckAndNormalizeKinectROI(): Kinect ROI fixed since it was out of bounds";
+		ofLogVerbose("Rs2Projector") << "CheckAndNormalizeRs2ROI(): Rs2 ROI fixed since it was out of bounds";
 }
 
-void KinectProjector::SaveFilteredDepthImageDebug()
+void Rs2Projector::SaveFilteredDepthImageDebug()
 {
-	std::string rawValOutKC = ofToDataPath(DebugFileOutDir+ "RawValsKinectCoords.txt");
+	std::string rawValOutKC = ofToDataPath(DebugFileOutDir+ "RawValsRs2Coords.txt");
 	std::string rawValOutWC = ofToDataPath(DebugFileOutDir + "RawValsWorldCoords.txt");
 	std::string rawValOutHM = ofToDataPath(DebugFileOutDir + "RawValsHM.txt");
 	std::string BinOutName = DebugFileOutDir + "RawBinImg.png";
@@ -1975,7 +1973,7 @@ void KinectProjector::SaveFilteredDepthImageDebug()
 	std::ofstream fostHM(rawValOutHM.c_str());
 
 	ofxCvFloatImage temp;
-	temp.setFromPixels(FilteredDepthImage.getFloatPixelsRef().getData(), kinectRes.x, kinectRes.y);
+	temp.setFromPixels(FilteredDepthImage.getFloatPixelsRef().getData(), rs2Res.x, rs2Res.y);
 	temp.setNativeScale(FilteredDepthImage.getNativeScaleMin(), FilteredDepthImage.getNativeScaleMax());
 	temp.convertToRange(0, 1);
 	ofxCvGrayscaleImage temp2;
@@ -1985,26 +1983,26 @@ void KinectProjector::SaveFilteredDepthImageDebug()
 	float *imgData = FilteredDepthImage.getFloatPixelsRef().getData();
 
 	ofxCvGrayscaleImage BinImg;
-	BinImg.allocate(kinectRes.x, kinectRes.y);
+	BinImg.allocate(rs2Res.x, rs2Res.y);
 	unsigned char *binData = BinImg.getPixels().getData();
 
-	for (int y = 0; y < kinectRes.y; y++)
+	for (int y = 0; y < rs2Res.y; y++)
 	{
-		for (int x = 0; x < kinectRes.x; x++)
+		for (int x = 0; x < rs2Res.x; x++)
 		{
-			int IDX = y * kinectRes.x + x;
+			int IDX = y * rs2Res.x + x;
 			double val = imgData[IDX];
 
 			fostKC << val << std::endl;
 
-			// Kinect coords
+			// Rs2 coords
 			ofVec4f kc = ofVec4f(x, y, val, 1);
 
 			// World coords
-			ofVec4f wc = kinectWorldMatrix*kc*kc.z;
+			ofVec4f wc = rs2WorldMatrix*kc*kc.z;
 			fostWC << wc.x << " " << wc.y << " " << wc.z << std::endl;
 
-			float H = elevationAtKinectCoord(x, y);
+			float H = elevationAtrs2Coord(x, y);
 			fostHM << H << std::endl;
 
 			unsigned char BinOut = H > 0;
@@ -2016,24 +2014,24 @@ void KinectProjector::SaveFilteredDepthImageDebug()
 	ofSaveImage(BinImg.getPixels(), BinOutName);
 }
 
-bool KinectProjector::getBinaryLandImage(ofxCvGrayscaleImage& BinImg)
+bool Rs2Projector::getBinaryLandImage(ofxCvGrayscaleImage& BinImg)
 {
-	if (!kinectOpened)
+	if (!rs2Opened)
 		return false;
 
 	float *imgData = FilteredDepthImage.getFloatPixelsRef().getData();
 
-	BinImg.allocate(kinectRes.x, kinectRes.y);
+	BinImg.allocate(rs2Res.x, rs2Res.y);
 	unsigned char *binData = BinImg.getPixels().getData();
 
-	for (int y = 0; y < kinectRes.y; y++)
+	for (int y = 0; y < rs2Res.y; y++)
 	{
-		for (int x = 0; x < kinectRes.x; x++)
+		for (int x = 0; x < rs2Res.x; x++)
 		{
-			int IDX = y * kinectRes.x + x;
+			int IDX = y * rs2Res.x + x;
 			double val = imgData[IDX];
 
-			float H = elevationAtKinectCoord(x, y);
+			float H = elevationAtrs2Coord(x, y);
 
 			unsigned char BinOut = 255 * (H > 0);
 
@@ -2045,34 +2043,15 @@ bool KinectProjector::getBinaryLandImage(ofxCvGrayscaleImage& BinImg)
 }
 
 
-ofRectangle KinectProjector::getProjectorActiveROI()
+ofRectangle Rs2Projector::getProjectorActiveROI()
 {
 	ofRectangle projROI = ofRectangle(ofPoint(0, 0), ofPoint(projRes.x, projRes.y));
-
-	//if (kinectOpened)
-	//{
-
-	//	ofVec2f a = worldCoordTokinectCoord(projCoordAndWorldZToWorldCoord(0, 0, basePlaneOffset.z));
-	//	ofVec2f b = worldCoordTokinectCoord(projCoordAndWorldZToWorldCoord(projRes.x, 0, basePlaneOffset.z));
-	//	ofVec2f c = worldCoordTokinectCoord(projCoordAndWorldZToWorldCoord(projRes.x, projRes.y, basePlaneOffset.z));
-	//	ofVec2f d = worldCoordTokinectCoord(projCoordAndWorldZToWorldCoord(0, projRes.y, basePlaneOffset.z));
-	//	float x1 = max(a.x, d.x);
-	//	float x2 = min(b.x, c.x);
-	//	float y1 = max(a.y, b.y);
-	//	float y2 = min(c.y, d.y);
-
-	//	ofVec2f UL = kinectCoordToProjCoord(x1, y1, basePlaneOffset.z);
-	//	ofVec2f LR = kinectCoordToProjCoord(x2, y2, basePlaneOffset.z);
-	//	projROI = ofRectangle(ofPoint(UL.x, UL.y), ofPoint(LR.x, LR.y));
-	//	projROI.standardize();
-	//}
-
 	return projROI;
 }
 
-void KinectProjector::SaveFilteredDepthImage()
+void Rs2Projector::SaveFilteredDepthImage()
 {
-	std::string rawValOutKC = ofToDataPath(DebugFileOutDir + "RawValsKinectCoords.txt");
+	std::string rawValOutKC = ofToDataPath(DebugFileOutDir + "RawValsRs2Coords.txt");
 	std::string rawValOutWC = ofToDataPath(DebugFileOutDir + "RawValsWorldCoords.txt");
 	std::string rawValOutHM = ofToDataPath(DebugFileOutDir + "RawValsHM.txt");
 	std::string BinOutName  = DebugFileOutDir + "RawBinImg.png";
@@ -2083,7 +2062,7 @@ void KinectProjector::SaveFilteredDepthImage()
 	std::ofstream fostHM(rawValOutHM.c_str());
 
 	ofxCvFloatImage temp;
-	temp.setFromPixels(FilteredDepthImage.getFloatPixelsRef().getData(), kinectRes.x, kinectRes.y);
+	temp.setFromPixels(FilteredDepthImage.getFloatPixelsRef().getData(), rs2Res.x, rs2Res.y);
 	temp.setNativeScale(FilteredDepthImage.getNativeScaleMin(), FilteredDepthImage.getNativeScaleMax());
 	temp.convertToRange(0, 1);
 	ofxCvGrayscaleImage temp2;
@@ -2093,26 +2072,26 @@ void KinectProjector::SaveFilteredDepthImage()
 	float *imgData = FilteredDepthImage.getFloatPixelsRef().getData();
 
 	ofxCvGrayscaleImage BinImg;
-	BinImg.allocate(kinectRes.x, kinectRes.y);
+	BinImg.allocate(rs2Res.x, rs2Res.y);
 	unsigned char *binData = BinImg.getPixels().getData();
 
-	for (int y = 0; y < kinectRes.y; y++)
+	for (int y = 0; y < rs2Res.y; y++)
 	{
-		for (int x = 0; x < kinectRes.x; x++)
+		for (int x = 0; x < rs2Res.x; x++)
 		{
-			int IDX = y * kinectRes.x + x;
+			int IDX = y * rs2Res.x + x;
 			double val = imgData[IDX];
 			
 			fostKC << val << std::endl;
 
-			// Kinect coords
+			// Rs2 coords
 			ofVec4f kc = ofVec4f(x, y, val, 1);
 
 			// World coords
-			ofVec4f wc = kinectWorldMatrix*kc*kc.z;
+			ofVec4f wc = rs2WorldMatrix*kc*kc.z;
 			fostWC << wc.x << " " << wc.y << " " << wc.z << std::endl;
 
-			float H = elevationAtKinectCoord(x, y);
+			float H = elevationAtrs2Coord(x, y);
 			fostHM << H << std::endl;
 
 			unsigned char BinOut = H > 0;
@@ -2124,20 +2103,20 @@ void KinectProjector::SaveFilteredDepthImage()
 	ofSaveImage(BinImg.getPixels(), BinOutName);
 }
 
-void KinectProjector::SaveKinectColorImage()
+void Rs2Projector::SaveRs2ColorImage()
 {
 	std::string ColourOutName = DebugFileOutDir + "RawColorImage.png";
 	std::string MedianOutName = DebugFileOutDir + "TemporalFilteredImage.png";
-	ofSaveImage(kinectColorImage.getPixels(), ColourOutName);
+	ofSaveImage(rs2ColorImage.getPixels(), ColourOutName);
 
 	if (TemporalFrameFilter.isValid())
 	{
 		ofxCvGrayscaleImage tempImage;
-//		tempImage.allocate(kinectColorImage.width, kinectColorImage.height);
+//		tempImage.allocate(rs2ColorImage.width, rs2ColorImage.height);
 		if (TemporalFilteringType == 0)
-			tempImage.setFromPixels(TemporalFrameFilter.getMedianFilteredImage(), kinectColorImage.width, kinectColorImage.height);
+			tempImage.setFromPixels(TemporalFrameFilter.getMedianFilteredImage(), rs2ColorImage.width, rs2ColorImage.height);
 		if (TemporalFilteringType == 1)
-			tempImage.setFromPixels(TemporalFrameFilter.getAverageFilteredColImage(), kinectColorImage.width, kinectColorImage.height);
+			tempImage.setFromPixels(TemporalFrameFilter.getAverageFilteredColImage(), rs2ColorImage.width, rs2ColorImage.height);
 		ofSaveImage(tempImage.getPixels(), MedianOutName);
 	}
 

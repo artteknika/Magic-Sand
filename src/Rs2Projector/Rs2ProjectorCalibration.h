@@ -33,12 +33,12 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include "libs/dlib/matrix/matrix_qr.h"
 
 
-class ofxKinectProjectorToolkit
+class ofxRs2ProjectorToolkit
 {
 public:
-    ofxKinectProjectorToolkit(ofVec2f projRes, ofVec2f kinectRes);
+    ofxRs2ProjectorToolkit(ofVec2f projRes, ofVec2f rs2Res);
     
-    void calibrate(vector<ofVec3f> pairsKinect,
+    void calibrate(vector<ofVec3f> pairsRs2,
                    vector<ofVec2f> pairsProjector);
     
     ofVec2f getProjectedPoint(ofVec3f worldPoint);
@@ -61,7 +61,7 @@ private:
     
     bool calibrated;
 	ofVec2f projRes;
-	ofVec2f kinectRes;
+	ofVec2f rs2Res;
 };
 
 #endif /* defined(__Magic_Sand__Calibration__) */

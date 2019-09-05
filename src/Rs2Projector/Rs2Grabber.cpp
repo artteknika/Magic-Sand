@@ -19,35 +19,34 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 General Public License for more details.
 ***********************************************************************/
 
-#include "KinectGrabber.h"
+#include "Rs2Grabber.h"
 #include "ofConstants.h"
 
-KinectGrabber::KinectGrabber()
+Rs2Grabber::Rs2Grabber()
 :newFrame(true),
 bufferInitiated(false),
-kinectOpened(false)
+rs2Opened(false)
 {
 }
 
-KinectGrabber::~KinectGrabber(){
+Rs2Grabber::~Rs2Grabber(){
     //    stop();
     waitForThread(true);
-    //	waitForThread(true);
 }
 
 /// Start the thread.
-void KinectGrabber::start(){
+void Rs2Grabber::start(){
     startThread(true);
 }
 
 /// Signal the thread to stop.  After calling this method,
 /// isThreadRunning() will return false and the while loop will stop
 /// next time it has the chance to.
-void KinectGrabber::stop(){
+void Rs2Grabber::stop(){
     stopThread();
 }
 
-bool KinectGrabber::setup(){
+bool Rs2Grabber::setup(){
 	// settings and defaults
 	storedframes = 0;
 	ROIAverageValue = 0;
@@ -56,30 +55,30 @@ bool KinectGrabber::setup(){
 	doInPaint = 0;
 	doFullFrameFiltering = false;
 
-	kinect.init();
-	kinect.setRegistration(true); // To have correspondance between RGB and depth images
-	kinect.setUseTexture(false);
-	width = kinect.getWidth();
-	height = kinect.getHeight();
+	rs2.init();
+	rs2.setRegistration(true); // To have correspondance between RGB and depth images
+	rs2.setUseTexture(false);
+	width = rs2.getWidth();
+	height = rs2.getHeight();
 
-	kinectDepthImage.allocate(width, height, 1);
+	rs2DepthImage.allocate(width, height, 1);
     filteredframe.allocate(width, height, 1);
-    kinectColorImage.allocate(width, height);
-    kinectColorImage.setUseTexture(false);
-	return openKinect();
+    rs2ColorImage.allocate(width, height);
+    rs2ColorImage.setUseTexture(false);
+	return openRs2();
 }
 
-bool KinectGrabber::openKinect() {
-	kinectOpened = kinect.open();
-	return kinectOpened;
+bool Rs2Grabber::openRs2() {
+	rs2Opened = rs2.open();
+	return rs2Opened;
 }
-void KinectGrabber::setupFramefilter(int sgradFieldresolution, float newMaxOffset, ofRectangle ROI, bool sspatialFilter, bool sfollowBigChange, int snumAveragingSlots) {
+void Rs2Grabber::setupFramefilter(int sgradFieldresolution, float newMaxOffset, ofRectangle ROI, bool sspatialFilter, bool sfollowBigChange, int snumAveragingSlots) {
     gradFieldresolution = sgradFieldresolution;
-    ofLogVerbose("kinectGrabber") << "setupFramefilter(): Gradient Field resolution: " << gradFieldresolution;
+    ofLogVerbose("Rs2Grabber") << "setupFramefilter(): Gradient Field resolution: " << gradFieldresolution;
     gradFieldcols = width / gradFieldresolution;
-    ofLogVerbose("kinectGrabber") << "setupFramefilter(): Width: " << width << " Gradient Field Cols: " << gradFieldcols;
+    ofLogVerbose("Rs2Grabber") << "setupFramefilter(): Width: " << width << " Gradient Field Cols: " << gradFieldcols;
     gradFieldrows = height / gradFieldresolution;
-    ofLogVerbose("kinectGrabber") << "setupFramefilter(): Height: " << height << " Gradient Field Rows: " << gradFieldrows;
+    ofLogVerbose("Rs2Grabber") << "setupFramefilter(): Height: " << height << " Gradient Field Rows: " << gradFieldrows;
     
     spatialFilter = sspatialFilter;
     followBigChange = sfollowBigChange;
@@ -91,20 +90,18 @@ void KinectGrabber::setupFramefilter(int sgradFieldresolution, float newMaxOffse
     maxVariance = 4 ;
     hysteresis = 0.5f ;
     bigChange = 10.0f ;
-//	instableValue = 0.0;
     maxgradfield = 1000;
     initialValue = 4000;
-//    outsideROIValue = 3999;
     minInitFrame = 60;
     
     //Setup ROI
-    setKinectROI(ROI);
+    setRs2ROI(ROI);
     
     //setting buffers
 	initiateBuffers();
 }
 
-void KinectGrabber::initiateBuffers(void){
+void Rs2Grabber::initiateBuffers(void){
 	filteredframe.set(0);
 
     averagingBuffer=new float[numAveragingSlots*height*width];
@@ -143,7 +140,7 @@ void KinectGrabber::initiateBuffers(void){
     firstImageReady = false;
 }
 
-void KinectGrabber::resetBuffers(void){
+void Rs2Grabber::resetBuffers(void){
     if (bufferInitiated){
         bufferInitiated = false;
         delete[] averagingBuffer;
@@ -154,7 +151,7 @@ void KinectGrabber::resetBuffers(void){
     initiateBuffers();
 }
 
-void KinectGrabber::threadedFunction() {
+void Rs2Grabber::threadedFunction() {
 	while(isThreadRunning()) {
         this->actionsLock.lock(); // Update the grabber state if needed
         for(auto & action : this->actions) {
@@ -163,81 +160,68 @@ void KinectGrabber::threadedFunction() {
         this->actions.clear();
         this->actionsLock.unlock();
         
-        kinect.update();
-        if(kinect.isFrameNew()){
-            kinectDepthImage = kinect.getRawDepthPixels();
+        rs2.update();
+        if(rs2.isFrameNew()){
+            rs2DepthImage = rs2.getRawDepthPixels();
             filter();
             filteredframe.setImageType(OF_IMAGE_GRAYSCALE);
             updateGradientField();
-			kinectColorImage.setFromPixels(kinect.getPixels());
+			rs2ColorImage.setFromPixels(rs2.getPixels());
         }
         if (storedframes == 0)
         {
             filtered.send(std::move(filteredframe));
 			gradient.send(std::move(gradField));
-            colored.send(std::move(kinectColorImage.getPixels()));
+            colored.send(std::move(rs2ColorImage.getPixels()));
             lock();
             storedframes += 1;
             unlock();
         }
         
     }
-    kinect.close();
+    rs2.close();
     delete[] averagingBuffer;
     delete[] statBuffer;
     delete[] validBuffer;
     delete[] gradField;
 }
 
-void KinectGrabber::performInThread(std::function<void(KinectGrabber&)> action) {
+void Rs2Grabber::performInThread(std::function<void(Rs2Grabber&)> action) {
     this->actionsLock.lock();
     this->actions.push_back(action);
     this->actionsLock.unlock();
 }
 
-void KinectGrabber::filter()
-{
-	if (bufferInitiated && numAveragingSlots < 2)
-	{
-		// Just copy raw kinect data
-		const RawDepth* inputFramePtr = static_cast<const RawDepth*>(kinectDepthImage.getData());
-		float* filteredFramePtr = filteredframe.getData();
-		inputFramePtr += minY*width;  // We only scan kinect ROI
-		filteredFramePtr += minY*width;
-
-		for (unsigned int y = minY; y < maxY; ++y)
-		{
-			inputFramePtr += minX;
-			filteredFramePtr += minX;
-
-			for (unsigned int x = minX; x < maxX; ++x, ++inputFramePtr, ++filteredFramePtr)
-			{
-				float newVal = static_cast<float>(*inputFramePtr);
-				*filteredFramePtr = newVal;
-			}
-			inputFramePtr += width - maxX;
-			filteredFramePtr += width - maxX;
-		}
-
-		if (doInPaint)
-		{
-			applySimpleOutlierInpainting();
-		}
-
-		if (spatialFilter)
-		{
-			applySpaceFilter();
-		}
-	}
-	else if (bufferInitiated)
+void Rs2Grabber::depth_filtering(){
+    const RawDepth* inputFramePtr = static_cast<const RawDepth*>(rs2DepthImage.getData());
+    float* filteredFramePtr = filteredframe.getData();
+    inputFramePtr += minY*width;  // We only scan rs2 ROI
+    filteredFramePtr += minY*width;
+    
+    for (unsigned int y = minY; y < maxY; ++y)
     {
-        const RawDepth* inputFramePtr = static_cast<const RawDepth*>(kinectDepthImage.getData());
+        inputFramePtr += minX;
+        filteredFramePtr += minX;
+        
+        for (unsigned int x = minX; x < maxX; ++x, ++inputFramePtr, ++filteredFramePtr)
+        {
+            float newVal = static_cast<float>(*inputFramePtr);
+            *filteredFramePtr = newVal;
+        }
+        inputFramePtr += width - maxX;
+        filteredFramePtr += width - maxX;
+    }
+}
+
+void Rs2Grabber::filter(){
+	if (bufferInitiated)
+    {
+        const RawDepth* inputFramePtr = static_cast<const RawDepth*>(rs2DepthImage.getData());
+        float* filteredFramePtr = filteredframe.getData();
         float* averagingBufferPtr = averagingBuffer+averagingSlotIndex*height*width;
         float* statBufferPtr = statBuffer;
         float* validBufferPtr = validBuffer;
-        float* filteredFramePtr = filteredframe.getData();
-        
-        inputFramePtr += minY*width;  // We only scan kinect ROI
+        inputFramePtr += minY*width;  // We only scan rs2 ROI
         averagingBufferPtr += minY*width;
         statBufferPtr += minY*width*3;
         validBufferPtr += minY*width;
@@ -272,12 +256,12 @@ void KinectGrabber::filter()
                             statBufferPtr[2] = newVal*newVal*numAveragingSlots;
                         }
                     }
-                    /* Update the pixel's statistics: */
+                    // Update the pixel's statistics:
                     ++statBufferPtr[0]; // Number of valid samples
                     statBufferPtr[1] += newVal; // Sum of valid samples
                     statBufferPtr[2] += newVal*newVal; // Sum of squares of valid samples
                     
-                    /* Check if the previous value in the averaging buffer was not initiated */
+                    // Check if the previous value in the averaging buffer was not initiated
                     if(oldVal != initialValue)
                     {
                         --statBufferPtr[0]; // Number of valid samples
@@ -285,18 +269,18 @@ void KinectGrabber::filter()
                         statBufferPtr[2] -= oldVal * oldVal; // Sum of squares of valid samples
                     }
                 }
-                // Check if the pixel is "stable": */
+                // Check if the pixel is "stable":
                 if(statBufferPtr[0] >= minNumSamples &&
                    statBufferPtr[2]*statBufferPtr[0] <= maxVariance*statBufferPtr[0]*statBufferPtr[0] + statBufferPtr[1]*statBufferPtr[1])
                 {
-                    /* Check if the new running mean is outside the previous value's envelope: */
+                    // Check if the new running mean is outside the previous value's envelope:
                     float newFiltered = statBufferPtr[1]/statBufferPtr[0];
                     if(abs(newFiltered-*validBufferPtr) >= hysteresis)
                     {
-                        /* Set the output pixel value to the depth-corrected running mean: */
+                        // Set the output pixel value to the depth-corrected running mean:
                         *filteredFramePtr = *validBufferPtr = newFiltered;
                     } else {
-                        /* Leave the pixel at its previous value: */
+                        // Leave the pixel at its previous value:
                         *filteredFramePtr = *validBufferPtr;
                     }
                 }
@@ -308,23 +292,24 @@ void KinectGrabber::filter()
             validBufferPtr += width-maxX;
             filteredFramePtr += width-maxX;
         }
-
-        /* Go to the next averaging slot: */
+        // Go to the next averaging slot:
         if(++averagingSlotIndex==numAveragingSlots)
             averagingSlotIndex=0;
         
         if (!firstImageReady){
             currentInitFrame++;
-            if(currentInitFrame > minInitFrame)
+            if(currentInitFrame > minInitFrame){
                 firstImageReady = true;
+                std::cout << "Ready Calibration" << std::endl;
+            }
         }
-        
+        depth_filtering();
 		if (doInPaint)
 		{
 			applySimpleOutlierInpainting();
 		}
 
-        /* Apply a spatial filter if requested: */
+        // Apply a spatial filter if requested:
         if(spatialFilter)
         {
             applySpaceFilter();
@@ -332,16 +317,16 @@ void KinectGrabber::filter()
 	}
 }
 
-void KinectGrabber::setFullFrameFiltering(bool ff, ofRectangle ROI)
+void Rs2Grabber::setFullFrameFiltering(bool ff, ofRectangle ROI)
 {
 	doFullFrameFiltering = ff;
 	if (ff)
 	{
-		setKinectROI(ofRectangle(0, 0, width, height));
+		setRs2ROI(ofRectangle(0, 0, width, height));
 	}
 	else 
 	{
-		setKinectROI(ROI);
+		setRs2ROI(ROI);
 		float *data = filteredframe.getData();
 
 		// Clear all pixels outside ROI
@@ -360,9 +345,9 @@ void KinectGrabber::setFullFrameFiltering(bool ff, ofRectangle ROI)
 	}
 }
 
-void KinectGrabber::applySpaceFilter()
+void Rs2Grabber::applySpaceFilter()
 {
-    for(int filterPass=0;filterPass<2;++filterPass)
+    for(int filterPass=0;filterPass< 20;++filterPass)
     {
 		// Pointer to first pixel of ROI
 		float *ptrOffset = filteredframe.getData() + minY * width + minX;
@@ -416,7 +401,7 @@ void KinectGrabber::applySpaceFilter()
     }
 }
 
-void KinectGrabber::updateGradientField()
+void Rs2Grabber::updateGradientField()
 {
     int ind = 0;
     float gx;
@@ -446,7 +431,7 @@ void KinectGrabber::updateGradientField()
                 if (gvx !=0 && gvy !=0)
                     gradField[y*gradFieldcols+x]=ofVec2f(gx/gradFieldresolution/gvx, gy/gradFieldresolution/gvy);
                 if (gradField[y*gradFieldcols+x].length() > maxgradfield){
-                    gradField[y*gradFieldcols+x].scale(maxgradfield);// /= gradField[y*gradFieldcols+x].length()*maxgradfield;
+                    gradField[y*gradFieldcols+x].scale(maxgradfield);
                     lgth+=1;
                 }
             } else {
@@ -457,7 +442,7 @@ void KinectGrabber::updateGradientField()
 }
 
 
-float KinectGrabber::findInpaintValue(float *data, int x, int y)
+float Rs2Grabber::findInpaintValue(float *data, int x, int y)
 {
 	int sideLength = 5;
 
@@ -489,7 +474,7 @@ float KinectGrabber::findInpaintValue(float *data, int x, int y)
 	return sumval / samples;
 }
 
-void KinectGrabber::applySimpleOutlierInpainting()
+void Rs2Grabber::applySimpleOutlierInpainting()
 {
 	float *data = filteredframe.getData();
 
@@ -522,10 +507,6 @@ void KinectGrabber::applySimpleOutlierInpainting()
 	{
 		for (unsigned int x = max(0, minX-2); x < min((int)width, maxX+2); x++)
 		{
-	//for (unsigned int y = minY; y < maxY; y++)
-	//{
-	//	for (unsigned int x = minX; x < maxX; x++)
-	//	{
 			int idx = y * width + x;
 			float val = data[idx];
 
@@ -548,13 +529,13 @@ void KinectGrabber::applySimpleOutlierInpainting()
 	}
 }
 
-bool KinectGrabber::isInsideROI(int x, int y){
+bool Rs2Grabber::isInsideROI(int x, int y){
     if (x<minX||x>maxX||y<minY||y>maxY)
         return false;
     return true;
 }
 
-void KinectGrabber::setKinectROI(ofRectangle ROI){
+void Rs2Grabber::setRs2ROI(ofRectangle ROI){
 	if (doFullFrameFiltering)
 	{
 		minX = 0;
@@ -579,7 +560,7 @@ void KinectGrabber::setKinectROI(ofRectangle ROI){
     resetBuffers();
 }
 
-void KinectGrabber::setAveragingSlotsNumber(int snumAveragingSlots){
+void Rs2Grabber::setAveragingSlotsNumber(int snumAveragingSlots){
     if (bufferInitiated){
             bufferInitiated = false;
             delete[] averagingBuffer;
@@ -592,7 +573,7 @@ void KinectGrabber::setAveragingSlotsNumber(int snumAveragingSlots){
     initiateBuffers();
 }
 
-void KinectGrabber::setGradFieldResolution(int sgradFieldresolution){
+void Rs2Grabber::setGradFieldResolution(int sgradFieldresolution){
     if (bufferInitiated){
         bufferInitiated = false;
         delete[] averagingBuffer;
@@ -604,7 +585,7 @@ void KinectGrabber::setGradFieldResolution(int sgradFieldresolution){
     initiateBuffers();
 }
 
-void KinectGrabber::setFollowBigChange(bool newfollowBigChange){
+void Rs2Grabber::setFollowBigChange(bool newfollowBigChange){
     if (bufferInitiated){
         bufferInitiated = false;
         delete[] averagingBuffer;
@@ -616,27 +597,27 @@ void KinectGrabber::setFollowBigChange(bool newfollowBigChange){
     initiateBuffers();
 }
 
-ofVec3f KinectGrabber::getStatBuffer(int x, int y){
+ofVec3f Rs2Grabber::getStatBuffer(int x, int y){
     float* statBufferPtr = statBuffer+3*(x + y*width);
     return ofVec3f(statBufferPtr[0], statBufferPtr[1], statBufferPtr[2]);
 }
 
-float KinectGrabber::getAveragingBuffer(int x, int y, int slotNum){
+float Rs2Grabber::getAveragingBuffer(int x, int y, int slotNum){
     float* averagingBufferPtr = averagingBuffer + slotNum*height*width + (x + y*width);
     return *averagingBufferPtr;
 }
 
-float KinectGrabber::getValidBuffer(int x, int y){
+float Rs2Grabber::getValidBuffer(int x, int y){
     float* validBufferPtr = validBuffer + (x + y*width);
     return *validBufferPtr;
 }
 
-ofMatrix4x4 KinectGrabber::getWorldMatrix() {
+ofMatrix4x4 Rs2Grabber::getWorldMatrix() {
 	auto mat = ofMatrix4x4();
-	if (kinectOpened) {
-		ofVec3f a = kinect.getWorldCoordinateAt(0, 0, 1);// Trick to access kinect internal parameters without having to modify ofxKinect
-		ofVec3f b = kinect.getWorldCoordinateAt(1, 1, 1);
-		ofLogVerbose("kinectGrabber") << "getWorldMatrix(): Computing kinect world matrix";
+	if (rs2Opened) {
+		ofVec3f a = rs2.getWorldCoordinateAt(0, 0, 1);// Trick to access rs2 internal parameters without having to modify ofxRealSense2
+		ofVec3f b = rs2.getWorldCoordinateAt(1, 1, 1);
+		ofLogVerbose("rs2Grabber") << "getWorldMatrix(): Computing rs2 world matrix";
 		mat = ofMatrix4x4(b.x - a.x, 0, 0, a.x,
 			0, b.y - a.y, 0, a.y,
 			0, 0, 0, 1,

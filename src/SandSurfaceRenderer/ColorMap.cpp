@@ -37,19 +37,14 @@ bool ColorMap::updateColormap() {
         /* Find the piecewise linear segment of the color function containing the key value using binary search: */
         int l = 0;
         int r = heightMapKeys.size()-1;
-		//if (i == 511)
-		//	cout << "pof" << endl;
         while(r-l>1)
         {
-            /* Enforce the invariant keys[l]<=val<keys[r]: */
             int m = (l+r)>>1;
             if(heightMapKeys[m].height<=val)
                 l=m;
             else
                 r=m;
         }
-		//if (r == 17)
-		//	cout << "paf" << endl;
 
         /* Evaluate the linear segment: */
         if(r<numEntries)
@@ -85,9 +80,9 @@ bool ColorMap::setColorKey(int key, ofColor color){
 
 bool ColorMap::setHeightKey(int key, float height){
     heightMapKeys[key].height = height;
-    
+
     std::sort(heightMapKeys.begin(), heightMapKeys.end());
-    
+
     min = heightMapKeys.front().height;
     max = heightMapKeys.back().height;
     return updateColormap();
@@ -95,9 +90,9 @@ bool ColorMap::setHeightKey(int key, float height){
 
 bool ColorMap::addKey(ofColor color, float height){
     heightMapKeys.push_back(HeightMapKey(height,color));
-    
+
     std::sort(heightMapKeys.begin(), heightMapKeys.end());
-    
+
     min = heightMapKeys.front().height;
     max = heightMapKeys.back().height;
     return updateColormap();
@@ -140,7 +135,7 @@ bool ColorMap::loadFile(string filename) {
         int numberOfSavedPoints = settings.getNumTags("key");
         for(int i = 0; i < numberOfSavedPoints; i++){
             settings.pushTag("key", i);
-            
+
             ofPoint p;
             float h = settings.getValue("height", 0);
             char r = settings.getValue("color-r", 0);
@@ -150,7 +145,7 @@ bool ColorMap::loadFile(string filename) {
             heightMapKeys.push_back(HeightMapKey(h, c));
             settings.popTag();
         }
-        
+
         settings.popTag(); //pop position
     }
     else{
@@ -160,7 +155,7 @@ bool ColorMap::loadFile(string filename) {
 
     min = heightMapKeys.front().height;
     max = heightMapKeys.back().height;
-    
+
     return updateColormap();
 }
 
@@ -186,25 +181,25 @@ void ColorMap::saveFile(string filename) {
 
 bool ColorMap::createFile(string filename) {
     heightMapKeys.clear();
-    
+
     int numKeys;
     {
-        heightMapKeys.push_back( HeightMapKey(-220.0,ofColor(0, 0,  0)));
-        heightMapKeys.push_back( HeightMapKey(-200.0,ofColor(0, 0,  80)));
-        heightMapKeys.push_back( HeightMapKey(-170.0,ofColor(0,  30, 100)));
-        heightMapKeys.push_back( HeightMapKey(-150.0,ofColor(0,  50, 102)));
-        heightMapKeys.push_back( HeightMapKey(-125,ofColor(19, 108, 160)));
-        heightMapKeys.push_back( HeightMapKey(-7.5,ofColor(24, 140, 205)));
-        heightMapKeys.push_back( HeightMapKey(-2.5,ofColor(135, 206, 250)));
-        heightMapKeys.push_back( HeightMapKey(-0.5,ofColor(176, 226, 255)));
+        heightMapKeys.push_back( HeightMapKey(-500.0,ofColor(0, 0,  0)));
+        heightMapKeys.push_back( HeightMapKey(-400.0,ofColor(0, 0,  80)));
+        heightMapKeys.push_back( HeightMapKey(-350.0,ofColor(0,  30, 100)));
+        heightMapKeys.push_back( HeightMapKey(-300.0,ofColor(0,  50, 102)));
+        heightMapKeys.push_back( HeightMapKey(-225,ofColor(19, 108, 160)));
+        heightMapKeys.push_back( HeightMapKey(-200.0,ofColor(24, 140, 205)));
+        heightMapKeys.push_back( HeightMapKey(-150.0,ofColor(135, 206, 250)));
+        heightMapKeys.push_back( HeightMapKey(-100.0,ofColor(176, 226, 255)));
         heightMapKeys.push_back( HeightMapKey(0.0,ofColor(0,  97,  71)));
-        heightMapKeys.push_back( HeightMapKey(2.5,ofColor(16, 122,  47)));
-        heightMapKeys.push_back( HeightMapKey(25,ofColor(232, 215, 125)));
-        heightMapKeys.push_back( HeightMapKey(60,ofColor(161,  67,   0)));
-        heightMapKeys.push_back( HeightMapKey(90,ofColor(130,  30,  30)));
-        heightMapKeys.push_back( HeightMapKey(140,ofColor(161, 161, 161)));
-        heightMapKeys.push_back( HeightMapKey(200,ofColor(206, 206, 206)));
-        heightMapKeys.push_back( HeightMapKey(220,ofColor(255, 255, 255)));
+        heightMapKeys.push_back( HeightMapKey(100.0,ofColor(16, 122,  47)));
+        heightMapKeys.push_back( HeightMapKey(150,ofColor(232, 215, 125)));
+        heightMapKeys.push_back( HeightMapKey(200,ofColor(161,  67,   0)));
+        heightMapKeys.push_back( HeightMapKey(225,ofColor(130,  30,  30)));
+        heightMapKeys.push_back( HeightMapKey(250,ofColor(161, 161, 161)));
+        heightMapKeys.push_back( HeightMapKey(300,ofColor(206, 206, 206)));
+        heightMapKeys.push_back( HeightMapKey(350,ofColor(255, 255, 255)));
     }
 
     ofxXmlSettings positions;
@@ -224,9 +219,9 @@ bool ColorMap::createFile(string filename) {
     }
     positions.popTag(); //pop position
     positions.saveFile(filename);
-    
+
     min = heightMapKeys.front().height;
     max = heightMapKeys.back().height;
-    
+
     return updateColormap();
 }

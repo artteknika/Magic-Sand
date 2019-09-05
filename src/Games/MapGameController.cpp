@@ -59,9 +59,9 @@ CMapGameController::~CMapGameController()
 {
 }
 
-void CMapGameController::setup(std::shared_ptr<KinectProjector> const& k)
+void CMapGameController::setup(std::shared_ptr<Rs2Projector> const& k)
 {
-	kinectProjector = k;
+	rs2Projector = k;
 
 	ofTrueTypeFont::setGlobalDpi(72);
 	if (!scoreFont.loadFont("verdana.ttf", 64))
@@ -606,7 +606,7 @@ bool CMapGameController::StartGame()
 	}
 
 	referenceMapHandler.CycleMap();
-	projROI = kinectProjector->getProjectorActiveROI();
+	projROI = rs2Projector->getProjectorActiveROI();
 	CurrentGameSequence = 0;
 	InitiateGameSequence();
 
@@ -727,23 +727,23 @@ void CMapGameController::setProjectorRes(ofVec2f& PR)
 	fboProjWindow.end();
 }
 
-void CMapGameController::setKinectRes(ofVec2f& KR)
+void CMapGameController::setRs2Res(ofVec2f& KR)
 {
-	kinectRes = KR;
+	rs2Res = KR;
 }
 
-void CMapGameController::setKinectROI(ofRectangle &KROI)
+void CMapGameController::setRs2ROI(ofRectangle &KROI)
 {
-	kinectROI = KROI;
-	ROI.x = kinectROI.x;
-	ROI.y = kinectROI.y;
-	ROI.width = kinectROI.width;
-	ROI.height = kinectROI.height;
+	rs2ROI = KROI;
+	ROI.x = rs2ROI.x;
+	ROI.y = rs2ROI.y;
+	ROI.width = rs2ROI.width;
+	ROI.height = rs2ROI.height;
 }
 
-ofRectangle CMapGameController::getKinectROI()
+ofRectangle CMapGameController::getRs2ROI()
 {
-	return kinectROI;
+	return rs2ROI;
 }
 
 void CMapGameController::setDebug(bool flag)
@@ -767,7 +767,7 @@ bool CMapGameController::GetActualBinaryLandImage()
 
 	std::string BinOutName = debugBaseDir + "BinaryLandImage.png";
 	
-	if (!kinectProjector->getBinaryLandImage(BinaryLandImage))
+	if (!rs2Projector->getBinaryLandImage(BinaryLandImage))
 		return false;
 
 	if (debugOn)
@@ -965,7 +965,7 @@ bool CMapGameController::ConnectedComponentAnalysis()
 	}
 
 	double BLOBArea = cv::sum(maxBLOBImage)[0] / 255.0;
-	double MaxPossible = kinectROI.width * kinectROI.height;
+	double MaxPossible = rs2ROI.width * rs2ROI.height;
 	double occupPercent = BLOBArea / MaxPossible;
 	if (occupPercent < 0.05)
 	{
@@ -980,10 +980,10 @@ bool CMapGameController::ConnectedComponentAnalysis()
 	for (int i = 0; i < contours[maxID].size(); i++)
 	{
 		cv::Point pc = contours[maxID][i];
-		pc.x += kinectROI.x;
-		pc.y += kinectROI.y;
+		pc.x += rs2ROI.x;
+		pc.y += rs2ROI.y;
 
-		ofVec2f tp = kinectProjector->kinectCoordToProjCoord(pc.x, pc.y);
+		ofVec2f tp = rs2Projector->rs2CoordToProjCoord(pc.x, pc.y);
 		//tp.y = projRes.y - tp.y;
 
 		MatchResultContours.push_back(tp);
@@ -1750,7 +1750,7 @@ bool CMapGameController::ComputeProjectorMap()
 		float x = LMDepthImage[i].x;
 		float y = LMDepthImage[i].y;
 
-		ofVec2f tp = kinectProjector->kinectCoordToProjCoord(x, y);
+		ofVec2f tp = rs2Projector->rs2CoordToProjCoord(x, y);
 		LMsProj[i].x = tp.x;
 		LMsProj[i].y = tp.y;
 	}

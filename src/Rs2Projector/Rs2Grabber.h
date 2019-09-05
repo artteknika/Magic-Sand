@@ -1,6 +1,6 @@
 /***********************************************************************
 KinectGrabber - KinectGrabber takes care of the communication with
-the kinect and the filtering of depth frame.
+the rs2 and the filtering of depth frame.
 Copyright (c) 2016 Thomas Wolf
 
 --- Adapted from FrameFilter of the Augmented Reality Sandbox
@@ -24,21 +24,22 @@ General Public License for more details.
 #include "ofxOpenCv.h"
 #include "ofxCv.h"
 #include "ofxKinect.h"
+#include "ofxRealSense2.h"
 
 #include "Utils.h"
 
-class KinectGrabber: public ofThread {
+class Rs2Grabber: public ofThread {
 public:
 	typedef unsigned short RawDepth; // Data type for raw depth values
 	typedef float FilteredDepth; // Data type for filtered depth values
 
-	KinectGrabber();
-	~KinectGrabber();
+	Rs2Grabber();
+	~Rs2Grabber();
     void start();
     void stop();
-    void performInThread(std::function<void(KinectGrabber&)> action);
+    void performInThread(std::function<void(Rs2Grabber&)> action);
     bool setup();
-	bool openKinect();
+	bool openRs2();
 	void setupFramefilter(int gradFieldresolution, float newMaxOffset, ofRectangle ROI, bool spatialFilter, bool followBigChange, int numAveragingSlots);
     void initiateBuffers(void); // Reinitialise buffers
     void resetBuffers(void);
@@ -48,7 +49,7 @@ public:
     float getValidBuffer(int x, int y);
     
     void setFollowBigChange(bool newfollowBigChange);
-    void setKinectROI(ofRectangle skinectROI);
+    void setRs2ROI(ofRectangle srs2ROI);
     void setAveragingSlotsNumber(int snumAveragingSlots);
     void setGradFieldResolution(int sgradFieldresolution);
     
@@ -64,12 +65,12 @@ public:
         return newFrame;
     }
     
-    ofVec2f getKinectSize(){
+    ofVec2f getRs2Size(){
         return ofVec2f(width, height);
     }
     
     float getRawDepthAt(int x, int y){
-        return kinectDepthImage.getData()[(int)(y*width+x)];
+        return rs2DepthImage.getData()[(int)(y*width+x)];
     }
     
 	ofMatrix4x4 getWorldMatrix();
@@ -91,7 +92,7 @@ public:
 		doInPaint = inp;
 	}
 
-	// Should the entire frame be filtered and thereby ignoring the KinectROI
+	// Should the entire frame be filtered and thereby ignoring the Rs2ROI
 	void setFullFrameFiltering(bool ff, ofRectangle ROI);
 
 	ofThreadChannel<ofFloatPixels> filtered;
@@ -101,6 +102,7 @@ public:
 private:
 	void threadedFunction() override;
     void filter();
+    void depth_filtering();
     bool isInsideROI(int x, int y); // test is x, y is inside ROI
     void applySpaceFilter();
     void updateGradientField();
@@ -112,28 +114,28 @@ private:
 	float findInpaintValue(float *data, int x, int y);
 	double ROIAverageValue = 0;
 	int setToLocalAvg = 0;
-	int setToGlobalAvg = 0;
+    int setToGlobalAvg = 0;
 
-
+    bool filter_flag = false;
 	bool newFrame;
     bool bufferInitiated;
     bool firstImageReady;
     int storedframes;
     
     // Thread lambda functions (actions)
-	vector<std::function<void(KinectGrabber&)> > actions;
+	vector<std::function<void(Rs2Grabber&)> > actions;
 	ofMutex actionsLock;
     
-    // Kinect parameters
-	bool kinectOpened;
-    ofxKinect               kinect;
-    unsigned int width, height; // Width and height of kinect frames
+    // Rs2 parameters
+	bool rs2Opened;
+	ofxRealSense2				rs2;
+    unsigned int width, height; // Width and height of rs2 frames
 	int minX, maxX; // , ROIwidth; // ROI definition
 	int minY, maxY; //, ROIheight;
     
     // General buffers
-    ofxCvColorImage         kinectColorImage;
-    ofShortPixels     kinectDepthImage;
+    ofxCvColorImage         rs2ColorImage;
+    ofShortPixels     rs2DepthImage;
     ofFloatPixels filteredframe;
     ofVec2f* gradField;
     
@@ -161,7 +163,7 @@ private:
 	bool spatialFilter; // Flag whether to apply a spatial filter to time-averaged depth values
     float maxOffset;
     
-    int minInitFrame; // Minimal number of frame to consider the kinect initialized
+    int minInitFrame; // Minimal number of frame to consider the rs2 initialized
     int currentInitFrame;
 
 	bool doInPaint;

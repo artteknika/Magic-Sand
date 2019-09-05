@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #define _BoidGameController_h_
 
 #include "vehicle.h"
-#include "../KinectProjector/KinectProjector.h"
+#include "../Rs2Projector/Rs2Projector.h"
 
 //! Controller for the BOID game
 /** The seminal paper on BOIDS can be found here: http://www.red3d.com/cwr/papers/1987/boids.html
@@ -38,7 +38,7 @@ class CBoidGameController
 		//! Destructor
 		virtual ~CBoidGameController();
 
-		void setup(std::shared_ptr<KinectProjector> const& k);
+		void setup(std::shared_ptr<Rs2Projector> const& k);
 		void update();
 
 		void drawProjectorWindow();
@@ -52,9 +52,9 @@ class CBoidGameController
 
 		void setProjectorRes(ofVec2f& PR);
 
-		void setKinectRes(ofVec2f& KR);
+		void setRs2Res(ofVec2f& KR);
 
-		void setKinectROI(ofRectangle &KROI);
+		void setRs2ROI(ofRectangle &KROI);
 
 		// Should debug files be dumped
 		void setDebug(bool flag);
@@ -65,7 +65,7 @@ class CBoidGameController
 
 	private:
 		
-		std::shared_ptr<KinectProjector> kinectProjector;
+		std::shared_ptr<Rs2Projector> rs2Projector;
 
 		void onButtonEvent(ofxDatGuiButtonEvent e);
 		void onToggleEvent(ofxDatGuiToggleEvent e);
@@ -87,10 +87,10 @@ class CBoidGameController
 		// 0: absolute beginner, 1: beginner, 2: medium, 3: expert
 		int GameDifficulty;
 
-		// Projector and kinect variables
+		// Projector and rs2 variables
 		ofVec2f projRes;
-		ofVec2f kinectRes;
-		ofRectangle kinectROI;
+		ofVec2f rs2Res;
+		ofRectangle rs2ROI;
 
 		// Drawable area
 		ofRectangle projROI;
@@ -102,7 +102,7 @@ class CBoidGameController
 		std::string HiScoreText;
 
 		// Should the boids be drawn flipped
-		// Depending on the direction of the Kinect
+		// Depending on the direction of the Rs2
 		bool doFlippedDrawing;
 
 		float LastTimeEvent;

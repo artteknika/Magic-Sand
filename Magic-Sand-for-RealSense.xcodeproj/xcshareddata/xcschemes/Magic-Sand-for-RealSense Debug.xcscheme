@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "E4B69B5A0A3A1756003C02F2"
-               BuildableName = "Magic-Sand.app"
-               BlueprintName = "Magic-Sand"
-               ReferencedContainer = "container:Magic-Sand.xcodeproj">
+               BuildableName = "Magic-Sand-for-RealSense.app"
+               BlueprintName = "Magic-Sand-for-RealSense"
+               ReferencedContainer = "container:Magic-Sand-for-RealSense.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E4B69B5A0A3A1756003C02F2"
-            BuildableName = "Magic-Sand.app"
-            BlueprintName = "Magic-Sand"
-            ReferencedContainer = "container:Magic-Sand.xcodeproj">
+            BuildableName = "Magic-Sand-for-RealSense.app"
+            BlueprintName = "Magic-Sand-for-RealSense"
+            ReferencedContainer = "container:Magic-Sand-for-RealSense.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </TestAction>
@@ -52,9 +52,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E4B69B5A0A3A1756003C02F2"
-            BuildableName = "Magic-Sand.app"
-            BlueprintName = "Magic-Sand"
-            ReferencedContainer = "container:Magic-Sand.xcodeproj">
+            BuildableName = "Magic-Sand-for-RealSense.app"
+            BlueprintName = "Magic-Sand-for-RealSense"
+            ReferencedContainer = "container:Magic-Sand-for-RealSense.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <AdditionalOptions>
@@ -70,9 +70,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E4B69B5A0A3A1756003C02F2"
-            BuildableName = "Magic-Sand.app"
-            BlueprintName = "Magic-Sand"
-            ReferencedContainer = "container:Magic-Sand.xcodeproj">
+            BuildableName = "Magic-Sand-for-RealSense.app"
+            BlueprintName = "Magic-Sand-for-RealSense"
+            ReferencedContainer = "container:Magic-Sand-for-RealSense.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
