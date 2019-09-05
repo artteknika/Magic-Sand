@@ -6,12 +6,12 @@ Magic Sand for RealSense は [UC Davis](http://idav.ucdavis.edu/~okreyllos/ResDe
 
 以下の環境で動作を確認しています。
 - 実行環境
-  - macOS 10.13 High Sierra
+  - macOS 10.14.6 Mojave
   - openFrameworks 0.9.8
-  - Xcode version 9.3
-  - [RealSense SDK](https://github.com/IntelRealSense/librealsense) version 2.13.0
+  - Xcode version 9.4.1
+  - [RealSense SDK](https://github.com/IntelRealSense/librealsense) version 2.27.0
 - RealSense
-  - Intel RealSense D435
+  - Intel RealSense D435 (Firmware 5.11.11.100)
 
 ## Main Features
 

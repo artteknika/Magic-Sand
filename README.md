@@ -6,12 +6,12 @@ This project is based on [Magic-Sand](https://github.com/thomwolf/Magic-Sand), a
 
 It was developed with specific aim of simplifying the use of an augmented reality sandbox for RealSense in a home/family environment:
 
-- run on a mid-range laptop or home computer (macOS High Sierra 10.13 operation has been confirmed, minimal GPU requirement).
+- run on a mid-range laptop or home computer (macOS 10.14.6 Mojave operation has been confirmed, minimal GPU requirement).
 - openFrameworks 0.9.8
-- Xcode version 9.3
-- [RealSense SDK](https://github.com/IntelRealSense/librealsense) version v2.13.0
+- Xcode version 9.4.1
+- [RealSense SDK](https://github.com/IntelRealSense/librealsense) version 2.27.0
 - RealSense
-  - Intel RealSense D435
+  - Intel RealSense D435 (Firmware 5.11.11.100)
 
 ## Main Features
 
