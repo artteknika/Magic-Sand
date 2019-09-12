@@ -130,7 +130,7 @@ Magic Sand for RealSense2 is based on [openframeworks](http://openframeworks.cc/
   * ofxKinect (using USB lib)
   * ofxXmlSettings
 - community addons:
-  * [ofxCv](https://github.com/kylemcdonald/ofxCv)
+  * [ofxCv (stable)](https://github.com/kylemcdonald/ofxCv/tree/stable)
   * [ofxParagraph](https://github.com/braitsch/ofxParagraph)
   * [ofxDatGui (forked version)](https://github.com/thomwolf/ofxDatGui)
   * [ofxModal](https://github.com/braitsch/ofxModal)
