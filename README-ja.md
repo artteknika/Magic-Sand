@@ -141,7 +141,7 @@ Xcode の Build Settings の `Other Linker Flags` に `/usr/local/lib/librealsen
   * ofxKinect (using USB lib)
   * ofxXmlSettings
 - community addons:
-  * [ofxCv](https://github.com/kylemcdonald/ofxCv)
+  * [ofxCv (stable)](https://github.com/kylemcdonald/ofxCv/tree/stable)
   * [ofxParagraph](https://github.com/braitsch/ofxParagraph)
   * [ofxDatGui (forked version)](https://github.com/thomwolf/ofxDatGui)
   * [ofxModal](https://github.com/braitsch/ofxModal)
