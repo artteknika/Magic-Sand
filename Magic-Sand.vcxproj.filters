@@ -82,12 +82,6 @@
     <ClCompile Include="..\..\..\addons\ofxDatGui\src\ofxDatGui.cpp">
       <Filter>addons\ofxDatGui\src</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\addons\ofxKinect\libs\libfreenect\platform\windows\libusb10emu\libusb-1.0\failguard.cpp">
-      <Filter>other</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\addons\ofxKinect\libs\libfreenect\platform\windows\libusb10emu\libusb-1.0\libusbemu.cpp">
-      <Filter>other</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\addons\ofxModal\src\ofxModalWindow.cpp">
       <Filter>addons\ofxModal\src</Filter>
     </ClCompile>
@@ -142,7 +136,7 @@
     <ClCompile Include="src\Rs2Projector\TemporalFrameFilter.cpp">
       <Filter>src\Rs2Projector</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\addons\ofxRealSense2\src\ofxRealSense2.cpp">
+    <ClCompile Include="addons\ofxRealSense2\src\ofxRealSense2.cpp">
       <Filter>addons\ofxRealSense2\src</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1253,7 +1247,7 @@
     <ClInclude Include="src\Rs2Projector\libs\dlib\uintn.h">
       <Filter>src\Rs2Projector\libs\dlib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\addons\ofxRealSense2\src\ofxRealSense2.h">
+    <ClInclude Include="addons\ofxRealSense2\src\ofxRealSense2.h">
       <Filter>addons\ofxRealSense2\src</Filter>
     </ClInclude>
   </ItemGroup>
